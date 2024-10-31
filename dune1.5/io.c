@@ -2,6 +2,8 @@
 * raw(?) I/O
 */
 #include "io.h"
+#include "io.h"
+int x, y;
 
 void gotoxy(POSITION pos) {
 	COORD coord = { pos.column, pos.row }; // 행, 열 반대로 전달
@@ -24,10 +26,11 @@ KEY get_key(void) {
 	if (!_kbhit()) {  // 입력된 키가 있는지 확인
 		return k_none;
 	}
-
-	int byte = _getch();
+	int byte = _getch();    // 입력된 키를 전달 받기
 	switch (byte) {
 	case 'q': return k_quit;  // 'q'를 누르면 종료
+	case ' ': return k_space; // 스페이스바
+	case 27: return k_esc; // esc 삭제
 	case 224:
 		byte = _getch();  // MSB 224가 입력 되면 1바이트 더 전달 받기
 		switch (byte) {

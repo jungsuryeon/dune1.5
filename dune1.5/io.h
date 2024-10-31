@@ -10,7 +10,6 @@ KEY get_key(void);
 void printc(POSITION pos, char ch, int color);
 void gotoxy(POSITION pos);
 void set_color(int color);
-void gotoxy_map(int x, int y);
 
 
 #endif

@@ -15,9 +15,6 @@
 #define COLOR_CURSOR	112
 #define COLOR_RESOURCE  112
 
-#define DOUBLE_PRESS 0.3  // 0.3초 이내 두 번 누르면 인식
-#define MULTIPLE_MOVE 5             // 짧게 두 번 눌렀을 때 이동할 칸 수
-
 // 지금은 자원, 맵, 커서만 표시
 // 앞으로 화면에 표시할 내용들 여기에 추가하기
 void display(

@@ -36,7 +36,10 @@ void display_cursor(CURSOR cursor);
 void display_system_message(void);
 void display_object_info(void);
 void display_commands(void);
-int get_color(char backbuf[MAP_HEIGHT][MAP_WIDTH]);
+int get_color(char backbuf, int row);
+void mark_esc(void);
+void state_letter(char arr[][100]);
+void object_info_mark(CURSOR cursor);
 
 
 void display(
@@ -78,6 +81,50 @@ void display_system_message(void) {
 		for (int j = 0; j < MAP_WIDTH; j++) {
 			POSITION pos = { i, j };
 			printc(padd(system_pos, pos), system_message[i][j], COLOR_DEFAULT);
+		}
+	}
+}
+
+void state_letter(char arr[][100]) {
+	for (int i = 0; i < 5; i++) {
+		char buff[100];
+		snprintf(buff, 100, arr[i]);
+		POSITION pos = { 3 + i, MAP_WIDTH + 3 };
+		gotoxy(pos);
+		set_color(COLOR_DEFAULT);
+		printf("%s", buff);
+	}
+}
+
+char place[5][100] = { "나는야~ 사막" , "기본 지형이며,", "건물을 지을 수 없어", "", " " }; // 객체당 하나
+char Plate[5][100] = { "나는야~ 장판", "지형이며," ,"위에 건물을 지을 수 있어", " "," "};
+char Rock[5][100] = { "나는야~ 바위", "지형이며," ,"샌드윔이 통과할 수 없어", " "," " };
+char Sand[5][100] = { "나는야~ 샌드윔", "천천히 움직일게" ,"하지만 일반 유닛을 만나면 앙 먹어버릴거야", "가끔 배설도 해(생성 주기랑 매장량은 비밀)"," " };
+char Space[5][100] = { "나는야~ 스파이스", "매장량표시(1~9)" ,"기본은 2개", "샌드윔이 만들어"," " };
+
+
+void object_info_mark(CURSOR cursor) {
+	POSITION prev = cursor.previous;
+	POSITION curr = cursor.current;
+	mark_esc();
+	switch (backbuf[curr.row][curr.column])
+	{
+	case ' ':state_letter(place); break;
+	case 'P':state_letter(Plate); break;
+	case 'R':state_letter(Rock); break;
+	case 'W':state_letter(Sand); break;
+	case 'S':state_letter(Space); break;
+	default:
+		break;
+	}
+
+}
+
+void mark_esc(void) {
+	for (int i = 0; i < 45; i++) {
+		for (int j = 0; j < 5; j++) {
+			POSITION pos = { 3+j, MAP_WIDTH + 3 + i };
+			printc(pos, ' ', COLOR_DEFAULT);
 		}
 	}
 }
@@ -149,17 +196,23 @@ void display_map(char map[N_LAYER][MAP_HEIGHT][MAP_WIDTH]) {
 		for (int j = 0; j < MAP_WIDTH; j++) {
 			if (frontbuf[i][j] != backbuf[i][j]) {//frontbuf 이전 상태 , backbuf 현재상태
 				POSITION pos = { i, j };
-				printc(padd(map_pos, pos), backbuf[i][j], get_color(backbuf[i][j]));
+				printc(padd(map_pos, pos), backbuf[i][j], get_color(backbuf[i][j],i));
 			}
 			frontbuf[i][j] = backbuf[i][j];
 		}
 	}
 }
 
-int get_color(char backbuf) { // 배경색 바꾸는 것
+int get_color(char backbuf, int row) { // 배경색 바꾸는 것
 	switch (backbuf) {
-	case 'B': return 159; break;
-	case 'H': return 207; break;
+	case 'B':
+	case 'H':
+		if (row > MAP_HEIGHT / 2) {
+			return 159; break;
+		}
+		else {
+			return 207; break;
+		}
 	case 'W': return 111; break;//샌드윔 황도색
 	case 'P': return 14; break;//장판 검은색
 	case 'S': return 175; break;//스파이스 주황색
@@ -174,9 +227,7 @@ void display_cursor(CURSOR cursor) {
 	POSITION curr = cursor.current; // 현재위치
 
 	char ch = frontbuf[prev.row][prev.column];//예전 커서를 지우는 거
-	printc(padd(map_pos, prev), ch, get_color(backbuf[prev.row][prev.column]));
+	printc(padd(map_pos, prev), ch, get_color(backbuf[prev.row][prev.column], prev.row));
 	ch = frontbuf[curr.row][curr.column];//새로운 위치에 커서를 놓는것
 	printc(padd(map_pos, curr), ch, COLOR_CURSOR);
 }
-
-

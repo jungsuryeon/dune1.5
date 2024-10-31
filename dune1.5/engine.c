@@ -9,10 +9,11 @@ void init(void);
 void Initial_State(void);
 void intro(void);
 void outro(void);
-void cursor_move(DIRECTION dir);
+void cursor_move(DIRECTION dir, int move_distance );
 void sample_obj_move(void);
 POSITION sample_obj_next_position(void);
 
+static clock_t last_key_time =0;
 
 /* ================= control =================== */
 int sys_clock = 0;		// system-wide clock(ms)
@@ -37,6 +38,9 @@ OBJECT_SAMPLE obj = {
 	.next_move_time = 300
 };
 
+bool click_check = 0;
+clock_t start_time;
+bool is_double_click = false;
 /* ================= main() =================== */
 int main(void) {
 	srand((unsigned int)time(NULL));
@@ -48,20 +52,62 @@ int main(void) {
 	display_object_info();
 	display_commands();
 	display(resource, map, cursor);
-	clock_t last_press_time = clock();
-	KEY last_key = k_none;
+	KEY last_key = 0;
 	while (1) {
 		// loop 돌 때마다(즉, TICK==10ms마다) 키 입력 확인
 		KEY key = get_key();
+		clock_t current_time = clock();
 
+		/*if (click_check) {
+			int diff = clock() - start_time;
+			if (diff > 20000) {
+				cursor_move(ktod(last_key), 1);
+				click_check = 0;
+			}
+		}*/
 		// 키 입력이 있으면 처리
 		if (is_arrow_key(key)) {
-			cursor_move(ktod(key));
+			 double time_diff = (double)(current_time - last_key_time) / CLOCKS_PER_SEC;
+			/*if (click_check == 0) {
+				start_time = clock(); 
+				last_key = key;
+				click_check = 1;
+			}
+			else if (last_key == key && clock()- start_time < 20000) {
+				cursor_move(ktod(key), 5);
+				click_check = 0;
+			}*/
+
+
+			if (key == last_key && time_diff < 0.3 && !is_double_click) {
+				// 두 번째 클릭이 빠르게 이루어진 경우 // 두 번 클릭 중복 방지
+				is_double_click = true;
+				cursor_move(ktod(key), 5); // 5칸 이동
+			}
+			else{
+				// 첫 번째 클릭이거나 느리게 눌린 경우
+				is_double_click = false;
+				cursor_move(ktod(key), 1); // 1칸 이동
+				
+			}
+			
+
+			char buff[100];
+			snprintf(buff, 100, "key : %d, last key :%d", key, last_key);
+			for (int i = 0; i < 23; i++) {
+				POSITION pos = { 20, 1 };
+				POSITION pos2 = { 0, i };
+				printc(padd(pos, pos2), buff[i], COLOR_DEFAULT);
+			}
+			 last_key = key;
+			 last_key_time = current_time;
 		}
 		else {
 			// 방향키 외의 입력
 			switch (key) {
 			case k_quit: outro();
+			case k_space:object_info_mark(cursor);  break;
+			case k_esc:mark_esc();
 			case k_none:
 			case k_undef:
 			default: break;
@@ -147,7 +193,7 @@ void Initial_State(void) {
 	map[1][MAP_HEIGHT - 4][1] = SYMBOL_HARVESTER;
 
 	// Spice fields
-	map[0][MAP_HEIGHT - 6][1] = SYMBOL_SPICE;
+	map[0][MAP_HEIGHT - 6][1] = SYMBOL_SPICE; 
 	map[0][5][MAP_WIDTH - 2] = SYMBOL_SPICE;
 
 	// Top-right base and harvester
@@ -160,7 +206,7 @@ void Initial_State(void) {
 	map[0][2][MAP_WIDTH - 3] = SYMBOL_BASE;
 	map[0][2][MAP_WIDTH - 2] = SYMBOL_BASE;
 	map[1][3][MAP_WIDTH - 2] = SYMBOL_HARVESTER;
-
+	
 	// Sandworms
 	map[1][2][MAP_WIDTH / 5] = SYMBOL_SANDWORM; // w
 	map[1][MAP_HEIGHT - 5][MAP_WIDTH - (MAP_WIDTH / 4)] = SYMBOL_SANDWORM; // w
@@ -184,14 +230,23 @@ void Initial_State(void) {
 
 }
 // (가능하다면) 지정한 방향으로 커서 이동
-void cursor_move(DIRECTION dir) {
+void cursor_move(DIRECTION dir, int distance) {
 	POSITION curr = cursor.current;
-	POSITION new_pos = pmove(curr, dir);
+	POSITION new_pos = curr;
 
-	// validation check
-	if (1 <= new_pos.row && new_pos.row <= MAP_HEIGHT - 2 && \
+	for (int i = 0; i < distance; i++) {
+		new_pos = pmove(new_pos, dir);
+		// 각 단계마다 유효성 검사
+		if (!(1 <= new_pos.row && new_pos.row <= MAP_HEIGHT - 2 &&
+			1 <= new_pos.column && new_pos.column <= MAP_WIDTH - 2)) {
+			// 맵 경계에 도달하면 이동 중단
+			return;
+		}
+	}
+
+	// 최종 위치가 유효하면 커서 업데이트
+	if (1 <= new_pos.row && new_pos.row <= MAP_HEIGHT - 2 &&
 		1 <= new_pos.column && new_pos.column <= MAP_WIDTH - 2) {
-
 		cursor.previous = cursor.current;
 		cursor.current = new_pos;
 	}
