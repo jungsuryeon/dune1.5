@@ -19,7 +19,6 @@
 #define SYMBOL_BASE 'B' // 플레이어의 시작 위치
 #define SYMBOL_SANDWORM 'W' // 샌드윔,중립유닛
 #define SYMBOL_HARVESTER 'H'//하베스터,자원을 채취하는 유닛
-#define SYMBOL_SPICE 'S' // 스파이스 매장지, 자원이 있는 위치
 #define SYMBOL_PLATE 'P' // 장판, 건설 가능한 지역
 #define SYMBOL_ROCK 'R' // 바위, 샌드윔이 통과할 수 없는 지형
 
@@ -35,6 +34,11 @@ typedef struct {
 	POSITION current;   // 현재 위치
 } CURSOR;
 
+typedef struct {
+	POSITION SAND_previous;  // 직전 위치
+	POSITION SAND_current;   // 현재 위치
+} SAND_SPICE;
+
 // 입력 가능한 키 종류.
 // 수업에서 enum은 생략했는데, 크게 어렵지 않으니 예제 검색
 typedef enum {
@@ -43,6 +47,8 @@ typedef enum {
 	k_quit,
 	k_space,
 	k_esc,
+	k_Hd,
+	k_Md,
 	k_undef, // 정의되지 않은 키 입력	
 } KEY;
 

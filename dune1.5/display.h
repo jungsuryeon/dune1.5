@@ -23,4 +23,11 @@ void display(
 	CURSOR cursor
 );
 
+void display_system_message(void);
+void display_object_info(void);
+void display_commands(void);
+void object_info_mark(CURSOR cursor);
+void mark_esc(void);
+void generate_spice(POSITION prev);
+
 #endif

@@ -19,6 +19,7 @@ const POSITION map_pos = { 1, 0 };
 const POSITION system_pos = { MAP_HEIGHT + 1, 0 };
 const POSITION object_info_pos = { 1, MAP_WIDTH + 1 };
 const POSITION commands_pos = { MAP_HEIGHT + 1, MAP_WIDTH + 1 };
+extern char map[2][MAP_HEIGHT][MAP_WIDTH];
 
 
 char backbuf[MAP_HEIGHT][MAP_WIDTH] = { 0 };
@@ -39,8 +40,9 @@ void display_commands(void);
 int get_color(char backbuf, int row);
 void mark_esc(void);
 void state_letter(char arr[][100]);
+void command_letter(char arr[][100]);
 void object_info_mark(CURSOR cursor);
-
+POSITION  SANDWORM_find(POSITION worm_position);
 
 void display(
 	RESOURCE resource,
@@ -95,12 +97,36 @@ void state_letter(char arr[][100]) {
 		printf("%s", buff);
 	}
 }
+void command_letter(char arr[][100]) {
+	for (int i = 0; i < 5; i++) {
+		char buff[100];
+		snprintf(buff, 100, arr[i]);
+		POSITION pos = { MAP_HEIGHT+3 + i, MAP_WIDTH + 3 };
+		gotoxy(pos);
+		set_color(COLOR_DEFAULT);
+		printf("%s", buff);
+	}
+}
 
+void sistem_letter(char arr[][100]) {
+	for (int i = 0; i < 5; i++) {
+		char buff[100];
+		snprintf(buff, 100, arr[i]);
+		POSITION pos = { MAP_HEIGHT + 3 + i, 2 };
+		gotoxy(pos);
+		set_color(COLOR_DEFAULT);
+		printf("%s", buff);
+	}
+}
+char Base[5][100] = { "나는야~ 본진" , "하베스터를 생성할 수 있어", " ", " ", " " };
+char Base_command[5][100] = { "H: Harvest(하베스터 생산)" , "M: Move(이동)", "건설비용 :  없음", "내구도 : 50", " " };
 char place[5][100] = { "나는야~ 사막" , "기본 지형이며,", "건물을 지을 수 없어", "", " " }; // 객체당 하나
-char Plate[5][100] = { "나는야~ 장판", "지형이며," ,"위에 건물을 지을 수 있어", " "," "};
+char Plate[5][100] = { "나는야~ 장판", "지형이며," ,"위에 건물을 지을 수 있어", "건물 짓기 전에 깔기 "," "};
 char Rock[5][100] = { "나는야~ 바위", "지형이며," ,"샌드윔이 통과할 수 없어", " "," " };
 char Sand[5][100] = { "나는야~ 샌드윔", "천천히 움직일게" ,"하지만 일반 유닛을 만나면 앙 먹어버릴거야", "가끔 배설도 해(생성 주기랑 매장량은 비밀)"," " };
 char Space[5][100] = { "나는야~ 스파이스", "매장량표시(1~9)" ,"기본은 2개", "샌드윔이 만들어"," " };
+char H_sistem[5][100] = { "A new harvester ready", "Not enough spice" ," ", " "," " };
+char M_sistem[5][100] = { "harvester move", " " ," ", " "," " };
 
 
 void object_info_mark(CURSOR cursor) {
@@ -113,7 +139,16 @@ void object_info_mark(CURSOR cursor) {
 	case 'P':state_letter(Plate); break;
 	case 'R':state_letter(Rock); break;
 	case 'W':state_letter(Sand); break;
-	case 'S':state_letter(Space); break;
+	case 'B':state_letter(Base); command_letter(Base_command); break;
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':state_letter(Space); break;
 	default:
 		break;
 	}
@@ -123,10 +158,19 @@ void object_info_mark(CURSOR cursor) {
 void mark_esc(void) {
 	for (int i = 0; i < 45; i++) {
 		for (int j = 0; j < 5; j++) {
-			POSITION pos = { 3+j, MAP_WIDTH + 3 + i };
+			POSITION pos = { 3 + j, MAP_WIDTH + 3 + i };
 			printc(pos, ' ', COLOR_DEFAULT);
 		}
 	}
+}
+
+void k_wd_pass(void) {
+	sistem_letter(H_sistem);
+	map[0][MAP_HEIGHT - 4][2] = SYMBOL_HARVESTER;
+}
+
+void k_Md_pass(void) {
+	sistem_letter(M_sistem);
 }
 
 void display_object_info(void) {
@@ -215,8 +259,16 @@ int get_color(char backbuf, int row) { // 배경색 바꾸는 것
 		}
 	case 'W': return 111; break;//샌드윔 황도색
 	case 'P': return 14; break;//장판 검은색
-	case 'S': return 175; break;//스파이스 주황색
 	case 'R': return 112; break;
+	case '1': 
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':return 175; break;//스파이스 주황색
 	default: return COLOR_DEFAULT; break;
 	}
 }
@@ -231,3 +283,48 @@ void display_cursor(CURSOR cursor) {
 	ch = frontbuf[curr.row][curr.column];//새로운 위치에 커서를 놓는것
 	printc(padd(map_pos, curr), ch, COLOR_CURSOR);
 }
+
+// 맨해튼 거리 계산 함수
+int calculate_distance(POSITION pos1, POSITION pos2) {
+	return abs(pos1.row - pos2.row) + abs(pos1.column - pos2.column);
+}
+
+// 맵에서 모든 'H'의 위치를 찾는 함수
+int find_H_positions(POSITION H_positions[]) {
+	int count = 0;
+	for (int i = 0; i < MAP_HEIGHT; i++) {
+		for (int j = 0; j < MAP_WIDTH; j++) {
+			if (backbuf[i][j] == 'H') {
+				H_positions[count].row = i;
+				H_positions[count].column = j;
+				count++;
+			}
+		}
+	}
+	return count; // 찾은 'H'의 개수 반환
+}
+
+POSITION  SANDWORM_find(POSITION worm_position) {
+	POSITION H_positions[100]; // 최대 100개의 H 위치 저장 가능
+	int num_H = find_H_positions(H_positions); // H의 위치 찾기
+
+	if (num_H == 0) {
+		// H가 없으면 기본값 반환
+		return (POSITION) { -1, -1 };
+	}
+
+	int min_distance = 1000;
+	POSITION closest_h = { -1, -1 };
+
+	// 모든 H와의 거리를 계산하여 가장 가까운 H를 찾음
+	for (int i = 0; i < num_H; i++) {
+		int distance = calculate_distance(worm_position, H_positions[i]);
+		if (distance < min_distance) {
+			min_distance = distance;
+			closest_h = H_positions[i];
+		}
+	}
+
+	return closest_h;
+} 
+

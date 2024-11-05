@@ -10,9 +10,12 @@ void Initial_State(void);
 void intro(void);
 void outro(void);
 void cursor_move(DIRECTION dir, int move_distance );
-void sample_obj_move(void);
-POSITION sample_obj_next_position(void);
-
+POSITION sample_obj_next_position(OBJECT_SAMPLE);
+POSITION  SANDWORM_find( POSITION worm_position);
+POSITION SANDWORM_move(POSITION sandworm_pos, POSITION h_pos);
+void sample_obj_move(OBJECT_SAMPLE* name);
+void cursor_move(DIRECTION dir, int distance);
+void sandworm_move();
 static clock_t last_key_time =0;
 
 /* ================= control =================== */
@@ -33,14 +36,38 @@ RESOURCE resource = {
 OBJECT_SAMPLE obj = {
 	.pos = {1, 1},
 	.dest = {MAP_HEIGHT - 2, MAP_WIDTH - 2},
-	.repr = 'o',
+	.repr = 'r',
 	.speed = 300,
 	.next_move_time = 300
+};
+
+OBJECT_SAMPLE sandworm1= {
+	.pos = {2, MAP_WIDTH / 5},
+	.dest = {MAP_HEIGHT - 2, MAP_WIDTH - 2}, 
+	.repr = 'W',
+	.speed = 2500,
+	.next_move_time = 500
+};
+
+OBJECT_SAMPLE sandworm2 = {
+	.pos = {MAP_HEIGHT - 8, 45},
+	.dest = {MAP_HEIGHT - 2, MAP_WIDTH - 2},
+	.repr = 'W',
+	.speed = 2500,
+	.next_move_time = 500
 };
 
 bool click_check = 0;
 clock_t start_time;
 bool is_double_click = false;
+int sandworm_next_move_time = 1000;
+POSITION sandworm_pos1 = { 2, MAP_WIDTH / 5 }; // 초기 샌드웜 위치
+POSITION sandworm_pos2 = { MAP_HEIGHT - 8, 45 }; // 초기 샌드웜 위치
+OBJECT_SAMPLE name = {
+	.pos = {0,0}
+};
+
+
 /* ================= main() =================== */
 int main(void) {
 	srand((unsigned int)time(NULL));
@@ -53,6 +80,8 @@ int main(void) {
 	display_commands();
 	display(resource, map, cursor);
 	KEY last_key = 0;
+
+
 	while (1) {
 		// loop 돌 때마다(즉, TICK==10ms마다) 키 입력 확인
 		KEY key = get_key();
@@ -92,13 +121,13 @@ int main(void) {
 			}
 			
 
-			char buff[100];
+			/*char buff[100];
 			snprintf(buff, 100, "key : %d, last key :%d", key, last_key);
 			for (int i = 0; i < 23; i++) {
 				POSITION pos = { 20, 1 };
 				POSITION pos2 = { 0, i };
 				printc(padd(pos, pos2), buff[i], COLOR_DEFAULT);
-			}
+			}*/
 			 last_key = key;
 			 last_key_time = current_time;
 		}
@@ -108,20 +137,25 @@ int main(void) {
 			case k_quit: outro();
 			case k_space:object_info_mark(cursor);  break;
 			case k_esc:mark_esc();
+			case k_Hd:k_wd_pass(cursor);
+			case k_Md:
 			case k_none:
 			case k_undef:
 			default: break;
 			}
 		}
 
+		sandworm_move();
+		
 		// 샘플 오브젝트 동작
-		sample_obj_move();
+		sample_obj_move(&obj);
 
 		// 화면 출력
 		display(resource, map, cursor);
 		Sleep(TICK);
 		sys_clock += 10;
 	}
+
 }
 
 /* ================= subfunctions =================== */
@@ -179,7 +213,7 @@ void init(void) {
 
 }
 
-void Initial_State(void) {
+void Initial_State(void) { // 기본 맵 출력
 	//밑
 	map[0][MAP_HEIGHT - 3][1] = SYMBOL_BASE;
 	map[0][MAP_HEIGHT - 3][2] = SYMBOL_BASE;
@@ -193,8 +227,8 @@ void Initial_State(void) {
 	map[1][MAP_HEIGHT - 4][1] = SYMBOL_HARVESTER;
 
 	// Spice fields
-	map[0][MAP_HEIGHT - 6][1] = SYMBOL_SPICE; 
-	map[0][5][MAP_WIDTH - 2] = SYMBOL_SPICE;
+	map[0][MAP_HEIGHT - 6][1] = '4'; 
+	map[0][5][MAP_WIDTH - 2] = '5';
 
 	// Top-right base and harvester
 	map[0][1][MAP_WIDTH - 5] = SYMBOL_PLATE;
@@ -209,7 +243,7 @@ void Initial_State(void) {
 	
 	// Sandworms
 	map[1][2][MAP_WIDTH / 5] = SYMBOL_SANDWORM; // w
-	map[1][MAP_HEIGHT - 5][MAP_WIDTH - (MAP_WIDTH / 4)] = SYMBOL_SANDWORM; // w
+	map[1][MAP_HEIGHT - 8][45] = SYMBOL_SANDWORM; // w
 
 	// Rocks
 	map[0][MAP_HEIGHT - 6][MAP_WIDTH / 5 + 1] = SYMBOL_ROCK;//R
@@ -255,24 +289,23 @@ void cursor_move(DIRECTION dir, int distance) {
 
 
 /* ================= sample object movement =================== */
-POSITION sample_obj_next_position(void) {
+POSITION sample_obj_next_position(OBJECT_SAMPLE *name) {
 	// 현재 위치와 목적지를 비교해서 이동 방향 결정	
-	POSITION diff = psub(obj.dest, obj.pos);
+	POSITION diff = psub((*name).dest, (*name).pos);
 	DIRECTION dir;
 
 	// 목적지 도착. 지금은 단순히 원래 자리로 왕복
 	if (diff.row == 0 && diff.column == 0) {
-		if (obj.dest.row == 1 && obj.dest.column == 1) {
+		if ((*name).dest.row == 1 && (*name).dest.column == 1) {
 			// topleft --> bottomright로 목적지 설정
-			POSITION new_dest = { MAP_HEIGHT - 2, MAP_WIDTH - 2 };
-			obj.dest = new_dest;
+			POSITION new_dest = (*name).dest;
 		}
 		else {
 			// bottomright --> topleft로 목적지 설정
 			POSITION new_dest = { 1, 1 };
-			obj.dest = new_dest;
+			(*name).dest = new_dest;
 		}
-		return obj.pos;
+		return (*name).pos;
 	}
 
 	// 가로축, 세로축 거리를 비교해서 더 먼 쪽 축으로 이동
@@ -282,32 +315,88 @@ POSITION sample_obj_next_position(void) {
 	else {
 		dir = (diff.column >= 0) ? d_right : d_left;
 	}
-
+	if ((*name).repr != 'r') {
+		int cycle = rand() % 9;
+		if (cycle < 2) {
+			int spice_amount = rand() % 9 + 1;
+			map[0][(*name).pos.row][(*name).pos.column] = '0' + spice_amount;
+		}
+	}
 	// validation check
 	// next_pos가 맵을 벗어나지 않고, (지금은 없지만)장애물에 부딪히지 않으면 다음 위치로 이동
 	// 지금은 충돌 시 아무것도 안 하는데, 나중에는 장애물을 피해가거나 적과 전투를 하거나... 등등
-	POSITION next_pos = pmove(obj.pos, dir);
+	POSITION next_pos = pmove((*name).pos, dir);
+	int next_rock = 0;
 	if (1 <= next_pos.row && next_pos.row <= MAP_HEIGHT - 2 && \
-		1 <= next_pos.column && next_pos.column <= MAP_WIDTH - 2 && \
-		map[1][next_pos.row][next_pos.column] < 0) {
-
-		return next_pos;
+		1 <= next_pos.column && next_pos.column <= MAP_WIDTH - 2) {
+		if (map[0][next_pos.row][next_pos.column] == 'R') {
+			if (dir == d_down || dir == d_up) {
+				dir = (diff.column >= 0) ? d_right : d_left;
+			}
+			else {
+				dir = (diff.row >= 0) ? d_down : d_up;
+			}
+			next_rock = 1;
+			pmove((*name).pos, dir);
+		}
+		if (next_rock != 1) {
+			return next_pos;
+		}
 	}
 	else {
-		return obj.pos;  // 제자리
+		return (*name).pos;  // 제자리
 	}
 }
 
-void sample_obj_move(void) {
-	if (sys_clock <= obj.next_move_time) {
+void sample_obj_move(OBJECT_SAMPLE *name) {
+	if (sys_clock <= (*name).next_move_time) {
 		// 아직 시간이 안 됐음
 		return;
 	}
 
 	// 오브젝트(건물, 유닛 등)은 layer1(map[1])에 저장
-	map[1][obj.pos.row][obj.pos.column] = -1;
-	obj.pos = sample_obj_next_position();
-	map[1][obj.pos.row][obj.pos.column] = obj.repr;
+	map[1][(*name).pos.row][(*name).pos.column] = -1;
+	(*name).pos = sample_obj_next_position(name);
+	map[1][(*name).pos.row][(*name).pos.column] = (*name).repr;
 
-	obj.next_move_time = sys_clock + obj.speed;
+	(*name).next_move_time = sys_clock + (*name).speed;
 }
+
+
+void sandworm_move() {
+	if (sys_clock < sandworm_next_move_time) return;
+	/*sandworm_next_move_time += 2000;*/
+
+	sandworm1.dest = SANDWORM_find(sandworm1.pos);
+	sandworm2.dest = SANDWORM_find(sandworm2.pos);
+
+	/*POSITION prev1 = sandworm1.pos;
+	POSITION prev2 = sandworm2.pos;*/
+	//POSITION map_pos = { 1, 0 };
+
+
+	/*
+	char buff1[100];
+	snprintf(buff1, 100, "%d, %d ", h_pos1.row, h_pos1.column);
+	for (int i = 0; i < 5; i++) {
+		POSITION pos = { 22, 1 };
+		POSITION pos2 = { 0, i };
+		printc(padd(pos, pos2), buff1[i], COLOR_DEFAULT);
+	}
+
+
+	char buff2[100];
+	snprintf(buff2, 100, "%d, %d ", h_pos2.row, h_pos2.column);
+	for (int i = 0; i < 5; i++) {
+		POSITION pos = { 23, 1 };
+		POSITION pos2 = { 0, i };
+		printc(padd(pos, pos2), buff2[i], COLOR_DEFAULT);
+	}
+	*/
+
+	sample_obj_move(&sandworm1);
+	sample_obj_move(&sandworm2);
+}
+
+
+
