@@ -42,6 +42,10 @@ void mark_esc(void);
 void state_letter(char arr[][100]);
 void command_letter(char arr[][100]);
 void object_info_mark(CURSOR cursor);
+void h_push(RESOURCE* resource);
+void sistem_letter(char arr[][100], char H_sistem[1][100]);
+void esc_choice(CURSOR cursor, RESOURCE* resource);
+void sistem_esc_choice(void);
 POSITION  SANDWORM_find(POSITION worm_position);
 
 void display(
@@ -108,7 +112,17 @@ void command_letter(char arr[][100]) {
 	}
 }
 
-void sistem_letter(char arr[][100]) {
+//5) 시스템 메시지 메시지 로그 스크롤 올리기
+int num = 0;
+int esc_letter = 0; //esc를 누르고 줄을 지웠는지 유무
+void sistem_letter(char arr[][100],char H_sistem[1][100]) {
+	if (esc_letter != 1) {
+		for (int j = 0; j < 4; j++) {
+			snprintf(arr[j], 100, arr[j + 1]);
+		}
+	}
+	snprintf(arr[4], 100, H_sistem);
+
 	for (int i = 0; i < 5; i++) {
 		char buff[100];
 		snprintf(buff, 100, arr[i]);
@@ -117,20 +131,26 @@ void sistem_letter(char arr[][100]) {
 		set_color(COLOR_DEFAULT);
 		printf("%s", buff);
 	}
+	esc_letter = 0;
 }
-char Base[5][100] = { "나는야~ 본진" , "하베스터를 생성할 수 있어", " ", " ", " " };
-char Base_command[5][100] = { "H: Harvest(하베스터 생산)" , "M: Move(이동)", "건설비용 :  없음", "내구도 : 50", " " };
+char Base[5][100] = { "나는야~ 본진 아트레이디스(플레이어)" , "하베스터를 생성할 수 있어", " ", " ", " " };
+char AI[5][100] = { "나는야~ 하코넨(AI)" , "당신의 적이야", " ", " ", " " };
+char AI_harvester[5][100] = { "나는야~ AI 하베스터", " ", " ", " "," " };
+char Base_command[5][100] = { "H: Harvest(하베스터 생산)","건설비용 :  없음", "내구도 : 50", " "};
 char place[5][100] = { "나는야~ 사막" , "기본 지형이며,", "건물을 지을 수 없어", "", " " }; // 객체당 하나
 char Plate[5][100] = { "나는야~ 장판", "지형이며," ,"위에 건물을 지을 수 있어", "건물 짓기 전에 깔기 "," "};
 char Rock[5][100] = { "나는야~ 바위", "지형이며," ,"샌드윔이 통과할 수 없어", " "," " };
+char harvester[5][100] = { "나는야~ 하베스터", "생산비용: 5 " ,"인구 수 : 5", "이동주기:2000","체력70" };
+char harvester_command[5][100] = { "H: Harvest(수확)", "M : move(이동)"," "," "," "};
 char Sand[5][100] = { "나는야~ 샌드윔", "천천히 움직일게" ,"하지만 일반 유닛을 만나면 앙 먹어버릴거야", "가끔 배설도 해(생성 주기랑 매장량은 비밀)"," " };
 char Space[5][100] = { "나는야~ 스파이스", "매장량표시(1~9)" ,"기본은 2개", "샌드윔이 만들어"," " };
-char H_sistem[5][100] = { "A new harvester ready", "Not enough spice" ," ", " "," " };
-char M_sistem[5][100] = { "harvester move", " " ," ", " "," " };
+char H_sistem_success[1][100] = { "A new harvester ready" };
+char H_sistem_failure[1][100] = { "Not enough spice     " };
+char M_sistem[1][100] = { "harvester move" };
+char sistem[5][100] = { " "," ", " ", " "," " };
 
-
+int apace_select;
 void object_info_mark(CURSOR cursor) {
-	POSITION prev = cursor.previous;
 	POSITION curr = cursor.current;
 	mark_esc();
 	switch (backbuf[curr.row][curr.column])
@@ -139,7 +159,36 @@ void object_info_mark(CURSOR cursor) {
 	case 'P':state_letter(Plate); break;
 	case 'R':state_letter(Rock); break;
 	case 'W':state_letter(Sand); break;
-	case 'B':state_letter(Base); command_letter(Base_command); break;
+	case 'H':
+		if (curr.row > MAP_HEIGHT / 2) {
+		state_letter(harvester); command_letter(harvester_command); break;
+		}
+		else {
+			state_letter(AI_harvester);
+			break;
+		}
+	case 'B':
+		if (curr.row > MAP_HEIGHT / 2) {
+		state_letter(Base); command_letter(Base_command);
+		apace_select = 1;
+		/*else if (key == 'M' || key == 'm') {
+			sistem_letter(M_sistem);
+			int up_down = rand() % 12;
+			if (up_down == 0) {
+				h_move.column++;
+				map[1][h_move.row][h_move.column] = SYMBOL_HARVESTER;
+			}
+			else {
+				h_move.row--;
+				map[1][h_move.row][h_move.column] = SYMBOL_HARVESTER;
+			}
+			}*/
+		break;
+		}
+		else {
+			state_letter(AI);
+			break;
+		}
 	case '1':
 	case '2':
 	case '3':
@@ -155,22 +204,47 @@ void object_info_mark(CURSOR cursor) {
 
 }
 
+POSITION h_move = { MAP_HEIGHT - 4,2 };// 하베스터 추가건 초기 위치
+void esc_choice(CURSOR cursor, RESOURCE* resource) { //esc 눌렀을 경우 지우고 H 부분에서 esc를 누를 경우 아예 삭제
+	apace_select = 0;
+	sistem_esc_choice();
+	POSITION curr = cursor.current;
+	if (curr.row == h_move.row && curr.column == h_move.column) {
+		map[1][h_move.row][h_move.column] = ' ';
+		(*resource).spice += 5; // 스파이스 +5
+		(*resource).population -= 5; // 인구수 -5
+	}
+}
+
+void sistem_esc_choice(void) { // 시스템 마지막 한줄 지우는 것
+	for (int i = 0; i < 45; i++) {
+		POSITION pos = { MAP_HEIGHT + 7, 2 + i };
+		printc(pos, ' ', COLOR_DEFAULT);
+		esc_letter = 1;
+	}
+}
+void h_push(RESOURCE* resource) {
+	if ((*resource).spice - 5 >= 0) {
+		if (apace_select == 1) {    //B 구간에서 선택 후 h를 눌렀을때
+		sistem_letter(sistem,H_sistem_success);
+		map[1][h_move.row][h_move.column] = SYMBOL_HARVESTER;
+		//apace_select = 0;
+		(*resource).spice -= 5;
+		(*resource).population += 5;
+		}
+	}else sistem_letter(sistem,H_sistem_failure);
+}
+
 void mark_esc(void) {
 	for (int i = 0; i < 45; i++) {
 		for (int j = 0; j < 5; j++) {
 			POSITION pos = { 3 + j, MAP_WIDTH + 3 + i };
 			printc(pos, ' ', COLOR_DEFAULT);
+
+			POSITION pos1 = { MAP_HEIGHT + 3 + j, MAP_WIDTH + 3 + i };
+			printc(pos1, ' ', COLOR_DEFAULT);
 		}
 	}
-}
-
-void k_wd_pass(void) {
-	sistem_letter(H_sistem);
-	map[0][MAP_HEIGHT - 4][2] = SYMBOL_HARVESTER;
-}
-
-void k_Md_pass(void) {
-	sistem_letter(M_sistem);
 }
 
 void display_object_info(void) {

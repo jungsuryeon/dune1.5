@@ -12,7 +12,6 @@ void outro(void);
 void cursor_move(DIRECTION dir, int move_distance );
 POSITION sample_obj_next_position(OBJECT_SAMPLE);
 POSITION  SANDWORM_find( POSITION worm_position);
-POSITION SANDWORM_move(POSITION sandworm_pos, POSITION h_pos);
 void sample_obj_move(OBJECT_SAMPLE* name);
 void cursor_move(DIRECTION dir, int distance);
 void sandworm_move();
@@ -27,9 +26,9 @@ CURSOR cursor = { { 1, 1 }, {1, 1} };
 char map[N_LAYER][MAP_HEIGHT][MAP_WIDTH] = { 0 };
 
 RESOURCE resource = {
-	.spice = 0,
+	.spice = 10,
 	.spice_max = 0,
-	.population = 0,
+	.population = 10,
 	.population_max = 0
 };
 
@@ -135,10 +134,9 @@ int main(void) {
 			// 방향키 외의 입력
 			switch (key) {
 			case k_quit: outro();
-			case k_space:object_info_mark(cursor);  break;
-			case k_esc:mark_esc();
-			case k_Hd:k_wd_pass(cursor);
-			case k_Md:
+			case k_space:object_info_mark(cursor, &resource);  break;
+			case k_esc:mark_esc();  esc_choice(cursor, &resource); break;
+			case k_Hd: h_push(&resource); break;
 			case k_none:
 			case k_undef:
 			default: break;
@@ -397,6 +395,8 @@ void sandworm_move() {
 	sample_obj_move(&sandworm1);
 	sample_obj_move(&sandworm2);
 }
+
+
 
 
 
