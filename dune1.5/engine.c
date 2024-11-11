@@ -1,3 +1,7 @@
+//1)~5)까지 만들었습니다.
+//1)
+
+
 #include <stdlib.h>
 #include <time.h>
 #include <assert.h>
@@ -27,12 +31,13 @@ char map[N_LAYER][MAP_HEIGHT][MAP_WIDTH] = { 0 };
 
 RESOURCE resource = {
 	.spice = 10,
-	.spice_max = 0,
+	.spice_max = 300,
 	.population = 10,
-	.population_max = 0
+	.population_max = 300
 };
 
-OBJECT_SAMPLE obj = {
+// 3)사막 독수리: 목적없이 날아다니는 중립유닛
+OBJECT_SAMPLE obj = { 
 	.pos = {1, 1},
 	.dest = {MAP_HEIGHT - 2, MAP_WIDTH - 2},
 	.repr = 'r',
@@ -40,6 +45,7 @@ OBJECT_SAMPLE obj = {
 	.next_move_time = 300
 };
 
+//3) 본진 하베스터로 가는 샌드윔
 OBJECT_SAMPLE sandworm1= {
 	.pos = {2, MAP_WIDTH / 5},
 	.dest = {MAP_HEIGHT - 2, MAP_WIDTH - 2}, 
@@ -48,6 +54,7 @@ OBJECT_SAMPLE sandworm1= {
 	.next_move_time = 500
 };
 
+//3) 하코넨 하베스터로 가는 샌드윔
 OBJECT_SAMPLE sandworm2 = {
 	.pos = {MAP_HEIGHT - 8, 45},
 	.dest = {MAP_HEIGHT - 2, MAP_WIDTH - 2},
@@ -56,15 +63,8 @@ OBJECT_SAMPLE sandworm2 = {
 	.next_move_time = 500
 };
 
-bool click_check = 0;
-clock_t start_time;
 bool is_double_click = false;
 int sandworm_next_move_time = 1000;
-POSITION sandworm_pos1 = { 2, MAP_WIDTH / 5 }; // 초기 샌드웜 위치
-POSITION sandworm_pos2 = { MAP_HEIGHT - 8, 45 }; // 초기 샌드웜 위치
-OBJECT_SAMPLE name = {
-	.pos = {0,0}
-};
 
 
 /* ================= main() =================== */
@@ -72,7 +72,7 @@ int main(void) {
 	srand((unsigned int)time(NULL));
 
 	init();
-	//intro();
+	intro();
 	Initial_State();
 	display_system_message();
 	display_object_info();
@@ -80,33 +80,14 @@ int main(void) {
 	display(resource, map, cursor);
 	KEY last_key = 0;
 
-
+	//2) 커서 & 상태창
 	while (1) {
 		// loop 돌 때마다(즉, TICK==10ms마다) 키 입력 확인
 		KEY key = get_key();
 		clock_t current_time = clock();
-
-		/*if (click_check) {
-			int diff = clock() - start_time;
-			if (diff > 20000) {
-				cursor_move(ktod(last_key), 1);
-				click_check = 0;
-			}
-		}*/
 		// 키 입력이 있으면 처리
 		if (is_arrow_key(key)) {
 			 double time_diff = (double)(current_time - last_key_time) / CLOCKS_PER_SEC;
-			/*if (click_check == 0) {
-				start_time = clock(); 
-				last_key = key;
-				click_check = 1;
-			}
-			else if (last_key == key && clock()- start_time < 20000) {
-				cursor_move(ktod(key), 5);
-				click_check = 0;
-			}*/
-
-
 			if (key == last_key && time_diff < 0.3 && !is_double_click) {
 				// 두 번째 클릭이 빠르게 이루어진 경우 // 두 번 클릭 중복 방지
 				is_double_click = true;
@@ -118,15 +99,6 @@ int main(void) {
 				cursor_move(ktod(key), 1); // 1칸 이동
 				
 			}
-			
-
-			/*char buff[100];
-			snprintf(buff, 100, "key : %d, last key :%d", key, last_key);
-			for (int i = 0; i < 23; i++) {
-				POSITION pos = { 20, 1 };
-				POSITION pos2 = { 0, i };
-				printc(padd(pos, pos2), buff[i], COLOR_DEFAULT);
-			}*/
 			 last_key = key;
 			 last_key_time = current_time;
 		}
@@ -136,7 +108,7 @@ int main(void) {
 			case k_quit: outro();
 			case k_space:object_info_mark(cursor, &resource);  break;
 			case k_esc:mark_esc();  esc_choice(cursor, &resource); break;
-			case k_Hd: h_push(&resource); break;
+			case k_Hd: h_push(cursor, &resource); break;
 			case k_none:
 			case k_undef:
 			default: break;
@@ -211,6 +183,7 @@ void init(void) {
 
 }
 
+//1) 초기상태 표시
 void Initial_State(void) { // 기본 맵 출력
 	//밑
 	map[0][MAP_HEIGHT - 3][1] = SYMBOL_BASE;
@@ -261,6 +234,8 @@ void Initial_State(void) { // 기본 맵 출력
 	map[0][4][MAP_WIDTH - (MAP_WIDTH / 5)] = SYMBOL_ROCK;//R
 
 }
+
+
 // (가능하다면) 지정한 방향으로 커서 이동
 void cursor_move(DIRECTION dir, int distance) {
 	POSITION curr = cursor.current;
@@ -286,7 +261,16 @@ void cursor_move(DIRECTION dir, int distance) {
 
 
 
-/* ================= sample object movement =================== */
+//3) 중립유닛
+/* ================= sample object movement =================== */ 
+//샌드윔 움직이는 코드
+POSITION sandworm_pos1 = { 2, MAP_WIDTH / 5 }; // 초기 샌드웜 위치
+POSITION sandworm_pos2 = { MAP_HEIGHT - 8, 45 }; // 초기 샌드웜 위치
+
+OBJECT_SAMPLE name = {
+	.pos = {0,0}
+};
+
 POSITION sample_obj_next_position(OBJECT_SAMPLE *name) {
 	// 현재 위치와 목적지를 비교해서 이동 방향 결정	
 	POSITION diff = psub((*name).dest, (*name).pos);
@@ -313,11 +297,12 @@ POSITION sample_obj_next_position(OBJECT_SAMPLE *name) {
 	else {
 		dir = (diff.column >= 0) ? d_right : d_left;
 	}
-	if ((*name).repr != 'r') {
+	if ((*name).repr != 'r') { //스파이스 랜덤 생성
 		int cycle = rand() % 9;
-		if (cycle < 2) {
+		if (cycle < 1) {
 			int spice_amount = rand() % 9 + 1;
 			map[0][(*name).pos.row][(*name).pos.column] = '0' + spice_amount;
+			random_space_letter(1);
 		}
 	}
 	// validation check
@@ -327,7 +312,7 @@ POSITION sample_obj_next_position(OBJECT_SAMPLE *name) {
 	int next_rock = 0;
 	if (1 <= next_pos.row && next_pos.row <= MAP_HEIGHT - 2 && \
 		1 <= next_pos.column && next_pos.column <= MAP_WIDTH - 2) {
-		if (map[0][next_pos.row][next_pos.column] == 'R') {
+		if (map[0][next_pos.row][next_pos.column] == 'R') { //돌이 앞에 있을경우 피해감
 			if (dir == d_down || dir == d_up) {
 				dir = (diff.column >= 0) ? d_right : d_left;
 			}
@@ -355,8 +340,9 @@ void sample_obj_move(OBJECT_SAMPLE *name) {
 	// 오브젝트(건물, 유닛 등)은 layer1(map[1])에 저장
 	map[1][(*name).pos.row][(*name).pos.column] = -1;
 	(*name).pos = sample_obj_next_position(name);
+	if (map[1][(*name).pos.row][(*name).pos.column] == 'H')
+		random_space_letter(2);
 	map[1][(*name).pos.row][(*name).pos.column] = (*name).repr;
-
 	(*name).next_move_time = sys_clock + (*name).speed;
 }
 
@@ -367,6 +353,9 @@ void sandworm_move() {
 
 	sandworm1.dest = SANDWORM_find(sandworm1.pos);
 	sandworm2.dest = SANDWORM_find(sandworm2.pos);
+
+	sample_obj_move(&sandworm1);
+	sample_obj_move(&sandworm2);
 
 	/*POSITION prev1 = sandworm1.pos;
 	POSITION prev2 = sandworm2.pos;*/
@@ -391,9 +380,6 @@ void sandworm_move() {
 		printc(padd(pos, pos2), buff2[i], COLOR_DEFAULT);
 	}
 	*/
-
-	sample_obj_move(&sandworm1);
-	sample_obj_move(&sandworm2);
 }
 
 

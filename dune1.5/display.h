@@ -28,6 +28,6 @@ void display_object_info(void);
 void display_commands(void);
 void object_info_mark(CURSOR cursor);
 void mark_esc(void);
-void h_push(RESOURCE* resource);
-void sistem_letter(char H_sistem[1][100]);
+void h_push(CURSOR cursor, RESOURCE* resource);
+void sistem_letter(char arr[][100], char H_sistem[1][100]);
 #endif
