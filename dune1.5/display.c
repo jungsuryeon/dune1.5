@@ -321,9 +321,10 @@ void mark_esc(void) {
 // h를 눌렀을때
 // 하베스터 추가건 초기 위치
 POSITION h_move = { MAP_HEIGHT - 4,2 };
-void h_push(CURSOR cursor, RESOURCE* resource){
+void h_push(CURSOR cursor, RESOURCE* resource) {
+	POSITION curr = cursor.current;
 	if ((*resource).spice - 5 >= 0) {
-		if (apace_select == 1) {    //B 구간에서 선택 후 h를 눌렀을때
+		if (apace_select == 1 && map[0][curr.row][curr.column] == 'B') {    //B 구간에서 선택 후 h를 눌렀을때
 			sistem_letter(sistem, H_sistem_success);
 			map[1][h_move.row][h_move.column] = SYMBOL_HARVESTER;
 			apace_select = 0;
