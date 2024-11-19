@@ -49,6 +49,10 @@ typedef enum {
 	k_esc,
 	k_Hd,
 	k_Md,
+	K_Bd,
+	K_Pd, 
+	K_Gd, 
+	K_Sd,
 	k_undef, // 정의되지 않은 키 입력	
 } KEY;
 

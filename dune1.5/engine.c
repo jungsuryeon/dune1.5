@@ -58,9 +58,9 @@ char map[N_LAYER][MAP_HEIGHT][MAP_WIDTH] = { 0 };
 
 RESOURCE resource = {
 	.spice = 10,
-	.spice_max = 300,
+	.spice_max = 30,
 	.population = 10,
-	.population_max = 300
+	.population_max = 30
 };
 
 // 3)사막 독수리: 목적없이 날아다니는 중립유닛
@@ -99,7 +99,7 @@ int main(void) {
 	srand((unsigned int)time(NULL));
 
 	init();
-	intro();
+	//intro();
 	Initial_State();
 	display_system_message();
 	display_object_info();
@@ -136,6 +136,8 @@ int main(void) {
 			case k_space:object_info_mark(cursor, &resource);  break;
 			case k_esc:mark_esc();  esc_choice(cursor, &resource); break;
 			case k_Hd: h_push(cursor, &resource); break;
+			case K_Bd: B_push(); break;
+			case K_Pd: P_push(); break;
 			case k_none:
 			case k_undef:
 			default: break;
@@ -206,7 +208,7 @@ void init(void) {
 	}
 
 	// object sample
-	map[1][obj.pos.row][obj.pos.column] = 'o';
+	map[1][obj.pos.row][obj.pos.column] = 'r';
 
 }
 
@@ -267,20 +269,23 @@ void Initial_State(void) { // 기본 맵 출력
 void cursor_move(DIRECTION dir, int distance) {
 	POSITION curr = cursor.current;
 	POSITION new_pos = curr;
+	int size;
+	if (Build_select >= 2) size = 1;
+	else size = 0;
 
 	for (int i = 0; i < distance; i++) {
 		new_pos = pmove(new_pos, dir);
 		// 각 단계마다 유효성 검사
-		if (!(1 <= new_pos.row && new_pos.row <= MAP_HEIGHT - 2 &&
-			1 <= new_pos.column && new_pos.column <= MAP_WIDTH - 2)) {
+		if (!(1 <= new_pos.row && new_pos.row <= MAP_HEIGHT - 2 - size &&
+			1 <= new_pos.column && new_pos.column <= MAP_WIDTH - 2 - size)) {
 			// 맵 경계에 도달하면 이동 중단
 			return;
 		}
 	}
 
 	// 최종 위치가 유효하면 커서 업데이트
-	if (1 <= new_pos.row && new_pos.row <= MAP_HEIGHT - 2 &&
-		1 <= new_pos.column && new_pos.column <= MAP_WIDTH - 2) {
+	if (1 <= new_pos.row && new_pos.row <= MAP_HEIGHT - 2 - size &&
+		1 <= new_pos.column && new_pos.column <= MAP_WIDTH - 2 - size) {
 		cursor.previous = cursor.current;
 		cursor.current = new_pos;
 	}
@@ -306,6 +311,10 @@ POSITION sample_obj_next_position(OBJECT_SAMPLE *name) {
 	// 목적지 도착. 지금은 단순히 원래 자리로 왕복
 	if (diff.row == 0 && diff.column == 0) {
 		if ((*name).dest.row == 1 && (*name).dest.column == 1) {
+			if ((*name).repr == 'r') {
+				POSITION new_dest = { MAP_HEIGHT - 2, MAP_WIDTH - 2 };
+				(*name).dest = new_dest;
+			}
 			// topleft --> bottomright로 목적지 설정
 			POSITION new_dest = (*name).dest;
 		}

@@ -41,10 +41,12 @@ int get_color(char backbuf, int row);
 void mark_esc(void);
 void state_letter(char arr[][100]);
 void command_letter(char arr[][100]);
-void object_info_mark(CURSOR cursor);
+void object_info_mark(CURSOR cursor, RESOURCE* resource);
 void h_push(CURSOR cursor, RESOURCE* resource);
 void sistem_letter(char arr[][100], char H_sistem[1][100]);
 void esc_choice(CURSOR cursor, RESOURCE* resource);
+void B_push(void);
+void P_push(void);
 //void sistem_esc_choice(void);
 POSITION  SANDWORM_find(POSITION worm_position);
 
@@ -197,8 +199,12 @@ char Base[5][100] = { "나는야~ 본진 아트레이디스(플레이어)" , "하베스터를 생성할
 char AI[5][100] = { "나는야~ 하코넨(AI)" , "당신의 적이야", " ", " ", " " };
 char AI_harvester[5][100] = { "나는야~ AI 하베스터", " ", " ", " "," " };
 char Base_command[5][100] = { "H: Harvest(하베스터 생산)","건설비용 :  없음", "내구도 : 50", " " };
+char Build[5][100] = { "B : 건물 목록"," ", " "," "," " };
+char Build_list[5][100] = { "장판(P: Plate)","숙소(D: Dormitory)", "창고(G: Garage)","병영(B: Barracks)","은신처(S: Shelter)" };
 char place[5][100] = { "나는야~ 사막" , "기본 지형이며,", "건물을 지을 수 없어", "", " " }; // 객체당 하나
 char Plate[5][100] = { "나는야~ 장판", "지형이며," ,"위에 건물을 지을 수 있어", "건물 짓기 전에 깔기 "," " };
+char Plate_account[5][100] = { "장판(P: Plate)","건물 짓기 전에 깔기","건설비용 : 1","내구도: 없음"," " };
+char Plate_creation[1][100] = { "장판이 생성되었습니다." };
 char Rock[5][100] = { "나는야~ 바위", "지형이며," ,"샌드윔이 통과할 수 없어", " "," " };
 char harvester[5][100] = { "나는야~ 하베스터", "생산비용: 5 " ,"인구 수 : 5", "이동주기:2000","체력70" };
 char harvester_command[5][100] = { "H: Harvest(수확)", "M : move(이동)"," "," "," " };
@@ -227,6 +233,7 @@ void sistem_letter(char arr[][100],char H_sistem[1][100]) {
 			snprintf(arr[j], 100, arr[j + 1]);
 		}
 	}
+
 	snprintf(arr[4], 100, H_sistem);
 
 	for (int i = 0; i < 5; i++) {
@@ -246,12 +253,42 @@ void random_space_letter(int num) {
 	else sistem_letter(sistem, eat_space);
 }
 
+//6) 건설
+int Build_select;
+void B_push(void) { // B를 눌렀을때
+	command_letter(Build_list);
+	Build_select = 1;
+}
+
+void P_push(void) {
+	if (Build_select == 1) {
+		for (int i = 0; i < 45; i++) {
+			for (int j = 0; j < 5; j++) {
+				POSITION pos1 = { MAP_HEIGHT + 3 + j, MAP_WIDTH + 3 + i };
+				printc(pos1, ' ', COLOR_DEFAULT);
+			}
+		}
+		command_letter(Plate_account);
+		Build_select = 2;
+	}
+
+}
+
 //2)커서 & 상태창
 //스페이스바를 눌렀을때 
 int apace_select;
-void object_info_mark(CURSOR cursor) {
+void object_info_mark(CURSOR cursor, RESOURCE *resource) {
 	POSITION curr = cursor.current;
 	mark_esc();
+	if (Build_select == 2&& curr.row != MAP_HEIGHT-2 && curr.column != MAP_WIDTH-2) {
+		map[0][curr.row][curr.column] = SYMBOL_PLATE;
+		map[0][curr.row+1][curr.column] = SYMBOL_PLATE;
+		map[0][curr.row][curr.column+1] = SYMBOL_PLATE;
+		map[0][curr.row+1][curr.column+1] = SYMBOL_PLATE;
+		Build_select = 0;
+		(*resource).spice -= 1;
+		sistem_letter(sistem, Plate_creation);
+	}
 	switch (backbuf[curr.row][curr.column])
 	{
 	case ' ':state_letter(place); break;
@@ -313,6 +350,8 @@ void mark_esc(void) {
 
 			POSITION pos1 = { MAP_HEIGHT + 3 + j, MAP_WIDTH + 3 + i };
 			printc(pos1, ' ', COLOR_DEFAULT);
+
+			command_letter(Build); // B 기본 명령창 표시
 		}
 	}
 }
@@ -335,11 +374,22 @@ void h_push(CURSOR cursor, RESOURCE* resource) {
 	else sistem_letter(sistem, H_sistem_failure);
 }
 
+
 // esc를 눌렀을때 선택 취소 , h 추가된 것에서 esc를 누르면 지워지면서 스파이스 인구수 변동
 void esc_choice(CURSOR cursor, RESOURCE* resource) { //esc 눌렀을 경우 지우고 H 부분에서 esc를 누를 경우 아예 삭제
 	apace_select = 0;
-	//sistem_esc_choice();
 	POSITION curr = cursor.current;
+	if (Build_select >= 2) {
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				POSITION pos = { curr.row + i, curr.column + j };
+				char ch = frontbuf[pos.row][pos.column];
+				printc(padd(map_pos, pos), ch, get_color(backbuf[pos.row][pos.column], pos.row));
+			}
+		}
+		Build_select = 0;
+	}
+	//sistem_esc_choice();
 	if (curr.row == h_move.row && curr.column == h_move.column) {
 		map[1][h_move.row][h_move.column] = ' ';
 		(*resource).spice += 5; // 스파이스 +5
@@ -354,6 +404,7 @@ void esc_choice(CURSOR cursor, RESOURCE* resource) { //esc 눌렀을 경우 지우고 H 
 //		esc_letter = 1;
 //	}
 //}
+
 
 // subfunction of draw_map()
 void project(char src[N_LAYER][MAP_HEIGHT][MAP_WIDTH], char dest[MAP_HEIGHT][MAP_WIDTH]) {
@@ -387,10 +438,34 @@ void display_cursor(CURSOR cursor) {
 	POSITION prev = cursor.previous; // 직전위치
 	POSITION curr = cursor.current; // 현재위치
 
-	char ch = frontbuf[prev.row][prev.column];//예전 커서를 지우는 거
+	// 이전 커서 위치 지우기
+	char ch = frontbuf[prev.row][prev.column];
 	printc(padd(map_pos, prev), ch, get_color(backbuf[prev.row][prev.column], prev.row));
-	ch = frontbuf[curr.row][curr.column];//새로운 위치에 커서를 놓는것
-	printc(padd(map_pos, curr), ch, COLOR_CURSOR);
+
+	if (Build_select >= 2) {
+		// 4x4 영역 처리
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				POSITION pos = { prev.row + i, prev.column + j };
+				ch = frontbuf[pos.row][pos.column];
+				printc(padd(map_pos, pos), ch, get_color(backbuf[pos.row][pos.column], pos.row));
+			}
+		}
+
+		// 새 커서 위치에 4x4 영역 그리기
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				POSITION pos = { curr.row + i, curr.column + j };
+				ch = frontbuf[pos.row][pos.column];
+				printc(padd(map_pos, pos), ch, COLOR_CURSOR);
+			}
+		}
+	}
+	else {
+		// 단일 커서 위치 그리기
+		ch = frontbuf[curr.row][curr.column];
+		printc(padd(map_pos, curr), ch, COLOR_CURSOR);
+	}
 }
 
 /*================3) 중립유닛 ===============*/

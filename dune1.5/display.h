@@ -26,8 +26,13 @@ void display(
 void display_system_message(void);
 void display_object_info(void);
 void display_commands(void);
-void object_info_mark(CURSOR cursor);
+void object_info_mark(CURSOR cursor, RESOURCE* resource);
+void esc_choice(CURSOR cursor, RESOURCE* resource);
 void mark_esc(void);
 void h_push(CURSOR cursor, RESOURCE* resource);
+void B_push(void);
+void P_push(void);
 void sistem_letter(char arr[][100], char H_sistem[1][100]);
+
+int Build_select;
 #endif
