@@ -32,7 +32,14 @@ void mark_esc(void);
 void h_push(CURSOR cursor, RESOURCE* resource);
 void B_push(void);
 void P_push(void);
+void D_push(void);
+void G_push(void);
+void S_push(CURSOR cursor, RESOURCE* resource);
 void sistem_letter(char arr[][100], char H_sistem[1][100]);
-
+void random_space_letter(int num);
+char Build_base[5][100];
+void command_letter(char arr[][100]);
+void initial_H(void);
 int Build_select;
+
 #endif

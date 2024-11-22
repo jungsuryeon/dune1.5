@@ -42,7 +42,7 @@ void intro(void);
 void outro(void);
 void cursor_move(DIRECTION dir, int move_distance );
 POSITION sample_obj_next_position(OBJECT_SAMPLE);
-POSITION  SANDWORM_find( POSITION worm_position);
+POSITION  SANDWORM_find(POSITION worm_position);
 void sample_obj_move(OBJECT_SAMPLE* name);
 void cursor_move(DIRECTION dir, int distance);
 void sandworm_move();
@@ -93,10 +93,36 @@ OBJECT_SAMPLE sandworm2 = {
 bool is_double_click = false;
 int sandworm_next_move_time = 1000;
 
+//BUILD buildings[50] = { 0 }; // 건물들의 정보를 저장해둘 구조체 배열
+//
+//// push_building('P', pos) // pos위치의 장판을 구조체를 추가
+//void push_building(char ch, POSITION pos) {
+//
+//	if (ch == 'P') {
+//		for (int i = 0; i < 50; i++) {
+//			if (buildings[i].exist == 0) {
+//				buildings[i].exist = 1; 
+//				buildings[i].symbol = 'P'; // 화면 표시 
+//				buildings[i].pos = pos;    // 좌상단 위치  
+//				buildings[i].spice_cost = 1; // 건설비용 
+//				buildings[i].population_increase = 0; // 인구 최대치 증가 
+//				buildings[i].spice_increase = 0;  //스파이스 보관 최대치 증가 
+//				buildings[i].durability = 0;  // 내구도 
+//				return;
+//			}
+//		}
+//	}
+//
+//
+//}
+
 
 /* ================= main() =================== */
 int main(void) {
 	srand((unsigned int)time(NULL));
+	//buildings[0].symbol = 'P';
+
+
 
 	init();
 	//intro();
@@ -105,6 +131,8 @@ int main(void) {
 	display_object_info();
 	display_commands();
 	display(resource, map, cursor);
+	initial_H();
+
 	KEY last_key = 0;
 
 	//2) 커서 & 상태창
@@ -120,7 +148,7 @@ int main(void) {
 				is_double_click = true;
 				cursor_move(ktod(key), 5); // 5칸 이동
 			}
-			else{
+			else{ 
 				// 첫 번째 클릭이거나 느리게 눌린 경우
 				is_double_click = false;
 				cursor_move(ktod(key), 1); // 1칸 이동
@@ -138,6 +166,11 @@ int main(void) {
 			case k_Hd: h_push(cursor, &resource); break;
 			case K_Bd: B_push(); break;
 			case K_Pd: P_push(); break;
+			case K_Dd: D_push(); break;
+			case K_Gd: G_push(); break;
+			case K_Sd: S_push(cursor, &resource); break;
+			case K_Fd: //F_push(cursor, &resource); 
+				break;
 			case k_none:
 			case k_undef:
 			default: break;
@@ -277,7 +310,7 @@ void cursor_move(DIRECTION dir, int distance) {
 		new_pos = pmove(new_pos, dir);
 		// 각 단계마다 유효성 검사
 		if (!(1 <= new_pos.row && new_pos.row <= MAP_HEIGHT - 2 - size &&
-			1 <= new_pos.column && new_pos.column <= MAP_WIDTH - 2 - size)) {
+			1 <= new_pos.column && new_pos.column <= MAP_WIDTH - 2- size)) {
 			// 맵 경계에 도달하면 이동 중단
 			return;
 		}
@@ -333,7 +366,7 @@ POSITION sample_obj_next_position(OBJECT_SAMPLE *name) {
 	else {
 		dir = (diff.column >= 0) ? d_right : d_left;
 	}
-	if ((*name).repr != 'r') { //스파이스 랜덤 생성
+	if ((*name).repr == 'W') { //스파이스 랜덤 생성
 		int cycle = rand() % 9;
 		if (cycle < 1) {
 			int spice_amount = rand() % 9 + 1;

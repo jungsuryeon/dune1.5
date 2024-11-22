@@ -50,8 +50,10 @@ typedef enum {
 	k_Hd,
 	k_Md,
 	K_Bd,
-	K_Pd, 
+	K_Pd,
+	K_Dd,
 	K_Gd, 
+	K_Fd,
 	K_Sd,
 	k_undef, // 정의되지 않은 키 입력	
 } KEY;
@@ -104,12 +106,41 @@ typedef struct {
 
 // 대강 만들어 봤음. 기능 추가하면서 각자 수정할 것
 typedef struct {
+	bool exist;
 	POSITION pos;		// 현재 위치(position)
 	POSITION dest;		// 목적지(destination)
 	char repr;			// 화면에 표시할 문자(representation)
 	int move_period;	// '몇 ms마다 한 칸 움직이는지'를 뜻함
 	int next_move_time;	// 다음에 움직일 시간
 	int speed;
+	int strength; // 체력
+
 } OBJECT_SAMPLE;
+
+typedef struct {
+	bool exist;
+	char symbol; // 화면 표시
+	POSITION pos; // 현재 위치(좌상단)
+	int spice_cost; // 건설비용
+	int population_increase; // 인구 최대치 증가
+	int spice_increase;//스파이스 보관 최대치 증가
+	int durability; // 내구도
+}BUILD;
+
+typedef struct {
+	bool exist;
+	POSITION pos; // 현재 위치(좌상단)
+	int durability; // 내구도
+}BUILD_s;
+
+typedef struct {
+	char symbol; // 화면 표시
+	int spice_cost; // 생산비용
+	int population; // 현재 인구 수 증가
+	int move_period; // 이동주기
+	int aggressive_strength; // 공격력
+	int attack;// 공격주기
+	int view;// 시야
+}UNIT;
 
 #endif
