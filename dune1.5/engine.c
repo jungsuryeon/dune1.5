@@ -79,7 +79,7 @@ OBJECT_SAMPLE sandworm1= {
 	.dest = {MAP_HEIGHT - 2, MAP_WIDTH - 2}, 
 	.repr = 'W',
 	.speed = 2500,
-	.next_move_time = 0
+	.next_move_time = 2500
 };
 
 //3) 하코넨 하베스터로 가는 샌드윔
@@ -88,7 +88,7 @@ OBJECT_SAMPLE sandworm2 = {
 	.dest = {MAP_HEIGHT - 2, MAP_WIDTH - 2},
 	.repr = 'W',
 	.speed = 2500,
-	.next_move_time = 0
+	.next_move_time = 2500
 };
 
 bool is_double_click = false;
@@ -325,6 +325,10 @@ POSITION sample_obj_next_position(OBJECT_SAMPLE *name) {
 			// topleft --> bottomright로 목적지 설정
 			new_dest = (*name).dest;
 		}
+		else if ((*name).dest.row == MAP_HEIGHT - 4 && (*name).dest.column == 1|| (*name).dest.column == 2) {
+			POSITION new_dest = space_find((*name).dest);
+			(*name).dest = new_dest;
+		}
 		else {
 			// bottomright --> topleft로 목적지 설정
 			POSITION new_dest = { 1, 1 };
@@ -355,8 +359,8 @@ POSITION sample_obj_next_position(OBJECT_SAMPLE *name) {
 	int next_rock = 0;
 	if (1 <= next_pos.row && next_pos.row <= MAP_HEIGHT - 2 && \
 		1 <= next_pos.column && next_pos.column <= MAP_WIDTH - 2) {
-		if (map[0][next_pos.row][next_pos.column] == 'R'|| //돌이 앞에 있을경우 피해감
-			((*name).repr == 'H' && map[0][next_pos.row][next_pos.column] == 'W')) { 
+		if (map[0][next_pos.row][next_pos.column] == 'R' || //돌이 앞에 있을경우 피해감
+			((*name).repr == 'H' && map[1][next_pos.row][next_pos.column] == 'W')) {
 			if (dir == d_down || dir == d_up) {
 				dir = (diff.column >= 0) ? d_right : d_left;
 			}
@@ -365,6 +369,9 @@ POSITION sample_obj_next_position(OBJECT_SAMPLE *name) {
 			}
 			next_rock = 1;
 			pmove((*name).pos, dir);
+		}
+		else if (map[1][next_pos.row][next_pos.column] == 'H') {
+			return (*name).pos; // 다음 하베스터가 있으면 기다림
 		}
 		if (next_rock != 1) {
 			return next_pos;
@@ -389,6 +396,7 @@ void sample_obj_move(OBJECT_SAMPLE *name) {
 	}
 	else if ((*name).repr=='H'&&map[0][(*name).pos.row][(*name).pos.column] >= '1' &&
 		map[0][(*name).pos.row][(*name).pos.column] <= '9') {
+		Sleep(2000); // 수확에 걸리는 시간
 		char result = over_pay(map[0][(*name).pos.row][(*name).pos.column]);
 		if (result == '0') {
 			map[0][(*name).pos.row][(*name).pos.column] = ' ';
@@ -401,8 +409,6 @@ void sample_obj_move(OBJECT_SAMPLE *name) {
 		(*name).dest = new_dest;
 	}
 	else if ((*name).pos.row == MAP_HEIGHT - 4 && (*name).pos.column == 1) {
-		(*name).dest = space_find((*name).pos);
-		POSITION new_dest = (*name).dest;
 		if (resource.spice_max - (resource.spice+space_number)>= 0) {
 			resource.spice += space_number;
 		}

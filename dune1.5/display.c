@@ -184,7 +184,7 @@ void push_units(OBJECT_SAMPLE units[], POSITION pos, int strength, UNIT unit) {
 		if (units[i].exist == 0) {
 			units[i].exist = 1; // 배열에 들어갔는지 여부
 			units[i].pos = pos; // 위치
-			units[i].dest = units[i].pos;
+			units[i].dest = pos;
 			units[i].strength = strength; // 체력
 			units[i].repr = unit.symbol;
 			units[i].speed = unit.move_period;
@@ -531,9 +531,10 @@ int Build_H_select = 0; // 하베스터에서 스페이스를 눌렀는지
 /*=============4) 유닛 1기 생산 ==========*/
 // h를 눌렀을때
 // 하베스터 추가건 초기 위치
-POSITION h_move = { MAP_HEIGHT - 4,2 };
+
 void h_push(CURSOR cursor, RESOURCE* resource) {
 	POSITION curr = cursor.current;
+	POSITION h_move = { MAP_HEIGHT - 4,2 };
 	if (Build_H_select==1 && backbuf[curr.row][curr.column] == 'H') {
 		Build_H_select += 1;
 		command_letter(harvester2_command);
@@ -542,12 +543,12 @@ void h_push(CURSOR cursor, RESOURCE* resource) {
 	else {
 		if ((*resource).spice - 5 >= 0) {
 			if (apace_select == 1 && map[0][curr.row][curr.column] == 'B') {    //B 구간에서 선택 후 h를 눌렀을때
+				push_units(H_units, h_move, 70, Harvest);
 				sistem_letter(sistem, H_sistem_success);
 				map[1][h_move.row][h_move.column] = Harvest.symbol;
 				apace_select = 0;
 				(*resource).spice -= Harvest.spice_cost;
 				(*resource).population += Harvest.population;
-				push_units(H_units, h_move, 70, Harvest);
 			}
 		}
 		else sistem_letter(sistem, H_sistem_failure);
@@ -670,6 +671,7 @@ OBJECT_SAMPLE* M_push(CURSOR cursor) {
 	if (Build_H_select == 2 && backbuf[curr.row][curr.column] >= '1' && backbuf[curr.row][curr.column] <= '9') {
 		H_units[H_num].dest = curr;
 		sistem_letter(sistem, M_sistem);
+		mark_esc();
 		Build_H_select = 0;
 		return &H_units[H_num];
 	}
@@ -803,7 +805,6 @@ void object_info_mark(CURSOR cursor, RESOURCE* resource) {
 				}
 				else {
 					state_letter(AI_harvester);
-					break;
 				}
 			}
 			break;
@@ -895,6 +896,7 @@ void esc_state(void) {
 void esc_choice(CURSOR cursor, RESOURCE* resource) { //esc 눌렀을 경우 지우고 H 부분에서 esc를 누를 경우 아예 삭제
 	apace_select = 0; // H 생성 취소
 	Build_H_select = 0; // H 수확 취소
+	Build_S_select = 0;
 	POSITION curr = cursor.current;
 	if (Build_select >= 2) {
 		for (int i = 0; i < 2; i++) {
@@ -1021,7 +1023,7 @@ int find_space_positions(POSITION num_positions[]) {
 	int count = 0;
 	for (int i = 0; i < MAP_HEIGHT; i++) {
 		for (int j = 0; j < MAP_WIDTH; j++) {
-			if (backbuf[i][j] >= '1' && backbuf[i][j] <= '9') {
+			if (backbuf[i][j] >= '1'&& backbuf[i][j] <= '9') {
 				num_positions[count].row = i;
 				num_positions[count].column = j;
 				count++;
@@ -1033,8 +1035,8 @@ int find_space_positions(POSITION num_positions[]) {
 
 
 POSITION  space_find(POSITION space_position) {
-	POSITION space_positions[50]; //H 위치저장
-	int num_H = find_H_positions(space_positions); // H 위치 찾기
+	POSITION space_positions[50]; //스페이스 위치
+	int num_H = find_space_positions(space_positions); // 스페이스 위치
 
 	if (num_H == 0) {
 		// 없으면 기본값 반환
