@@ -35,11 +35,16 @@ void P_push(void);
 void D_push(void);
 void G_push(void);
 void S_push(CURSOR cursor, RESOURCE* resource);
+OBJECT_SAMPLE* M_push(CURSOR cursor);
 void sistem_letter(char arr[][100], char H_sistem[1][100]);
 void random_space_letter(int num);
 char Build_base[5][100];
 void command_letter(char arr[][100]);
 void initial_H(void);
 int Build_select;
+void reset(POSITION dest);
+int find_H_positions(POSITION H_positions[]);
+POSITION  SANDWORM_find(POSITION worm_position);
+POSITION  space_find(POSITION space_position);
 
 #endif

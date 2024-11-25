@@ -34,7 +34,7 @@ KEY get_key(void) {
 	case 'h':
 	case 'H':return k_Hd;//h
 	case 'm':
-	case 'M':return k_Md;
+	case 'M':return K_Md;
 	case 'B':
 	case 'b':return K_Bd; // 건물 목록
 	case 'p':

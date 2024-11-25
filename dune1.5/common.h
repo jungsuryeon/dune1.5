@@ -55,6 +55,7 @@ typedef enum {
 	K_Gd, 
 	K_Fd,
 	K_Sd,
+	K_Md,
 	k_undef, // 정의되지 않은 키 입력	
 } KEY;
 
@@ -114,7 +115,6 @@ typedef struct {
 	int next_move_time;	// 다음에 움직일 시간
 	int speed;
 	int strength; // 체력
-
 } OBJECT_SAMPLE;
 
 typedef struct {
@@ -142,5 +142,6 @@ typedef struct {
 	int attack;// 공격주기
 	int view;// 시야
 }UNIT;
+
 
 #endif
