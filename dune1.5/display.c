@@ -48,14 +48,15 @@ void sistem_letter(char arr[][100], char H_sistem[1][100]);
 void esc_choice(CURSOR cursor, RESOURCE* resource);
 void B_push(void);
 void P_push(void);
+OBJECT_SAMPLE* P_unit_push(CURSOR cursor);
 void D_push(void);
 void G_push(void);
-OBJECT_SAMPLE* M_push(CURSOR cursor);
+OBJECT_SAMPLE * M_push(CURSOR cursor);
 void S_push(CURSOR cursor, RESOURCE* resource);
 void Barracks_push(void);
 void Building(CURSOR cursor, RESOURCE* resource, BUILD* name, char H_sistem[1][100], char state[5][100]);
-void push_building(BUILD_s buildings[], POSITION pos, int durability);
-void push_units(OBJECT_SAMPLE units[], POSITION pos, int strength, UNIT unit);
+void push_building(BUILD_s buildings[], POSITION pos, BUILD unit);
+int push_units(OBJECT_SAMPLE units[], POSITION pos, int strength, UNIT unit);
 void space_store(int num);
 int find_H_positions(POSITION H_positions[]);
 POSITION  SANDWORM_find(POSITION worm_position);
@@ -63,8 +64,11 @@ void esc_state(void);
 void H_number(int num);
 POSITION produce_position(CURSOR cursor);
 int find_space_positions(POSITION num_positions[]);
-POSITION  space_find(POSITION space_position);
-//void sistem_esc_choice(void);
+POSITION  space_find(POSITION space_position, int ai_player);
+void division(POSITION pos1, RESOURCE* resource);
+void random_space_letter(int num, RESOURCE* resource);
+void initial_ai_H(void);
+void AI_Building(RESOURCE* resource, BUILD* name);
 
 // =================== 건물 구조체 ====================
 //공통
@@ -73,6 +77,8 @@ BUILD P = {
 	.spice_cost = 1, // 건설비용
 	.population_increase = 0, // 인구 최대치 증가
 	.spice_increase = 0,//스파이스 보관 최대치 증가
+	.durability = 0,
+	.ai = 0 //ai가 아니다
 
 };
 
@@ -81,6 +87,8 @@ BUILD D = {
 	.spice_cost = 2, // 건설비용
 	.population_increase = 10, // 인구 최대치 증가
 	.spice_increase = 0,//스파이스 보관 최대치 증가
+	.durability = 10,
+	.ai = 0//ai가 아니다
 };
 
 BUILD G = {
@@ -88,14 +96,18 @@ BUILD G = {
 	.spice_cost = 4, // 건설비용
 	.population_increase = 0, // 인구 최대치 증가
 	.spice_increase = 10,//스파이스 보관 최대치 증가
+	.durability = 10,
+	.ai = 0//ai가 아니다
 };
 
 // 플레이어
-BUILD B = {
+BUILD B = { // 병영
 	.symbol = 'b', // 화면 표시
 	.spice_cost = 4, // 건설비용
 	.population_increase = 0, // 인구 최대치 증가
 	.spice_increase = 0,//스파이스 보관 최대치 증가
+	.durability = 20,
+	.ai = 0//ai가 아니다
 };
 
 BUILD S = {
@@ -103,22 +115,11 @@ BUILD S = {
 	.spice_cost = 5, // 건설비용
 	.population_increase = 0, // 인구 최대치 증가
 	.spice_increase = 0,//스파이스 보관 최대치 증가
+	.durability = 30,
+	.ai = 0//ai가 아니다
 };
 
-// 하코넨
-BUILD A = {
-	.symbol = 'A', // 화면 표시
-	.spice_cost = 3, // 건설비용
-	.population_increase = 0, // 인구 최대치 증가
-	.spice_increase = 0,//스파이스 보관 최대치 증가
-};
 
-BUILD F = {
-	.symbol = 'F', // 화면 표시
-	.spice_cost = 5, // 건설비용
-	.population_increase = 0, // 인구 최대치 증가
-	.spice_increase = 0,//스파이스 보관 최대치 증가
-};
 
 //// ================= 유닛 구조체 ======================
 
@@ -179,37 +180,76 @@ OBJECT_SAMPLE Fremen_units[20] = { 0 };
 OBJECT_SAMPLE Fighter_units[20] = { 0 };
 OBJECT_SAMPLE T_units[20] = { 0 };
 
-void push_units(OBJECT_SAMPLE units[], POSITION pos, int strength, UNIT unit) {
+
+
+int push_units(OBJECT_SAMPLE units[], POSITION pos, int strength, UNIT unit) {
 	for (int i = 0; i < 10; i++) {
 		if (units[i].exist == 0) {
 			units[i].exist = 1; // 배열에 들어갔는지 여부
 			units[i].pos = pos; // 위치
 			units[i].dest = pos;
+			units[i].originally_pos = pos;
 			units[i].strength = strength; // 체력
 			units[i].repr = unit.symbol;
 			units[i].speed = unit.move_period;
-			return;
+			units[i].next_move_time = unit.move_period;
+			units[i].space_number = 0;
+			units[i].M_push = 0;
+			if (units[i].pos.row == 3 &&
+				units[i].pos.column == MAP_WIDTH - 2 || units[i].pos.column == MAP_WIDTH - 3) {
+				return i;
+			}
+			return 0;
 		}
 	}
+	return 0;
 }
 
 void initial_H(void) { // 초기 H 위치 저장
-	POSITION pos = { MAP_HEIGHT - 4 , 1 };
+	POSITION pos = { 2, MAP_WIDTH - 4 };
 	push_units(H_units, pos, 70, Harvest);
 }
 
+
 void reset(POSITION dest) {
+	OBJECT_SAMPLE* eat = NULL;
 	for (int i = 0; i < 10; i++) {
 		if (H_units[i].pos.row == dest.row &&
 			H_units[i].pos.column == dest.column) {
-			// H 유닛 초기화
-			H_units[i].pos.row = 0;
-			H_units[i].pos.column = 0;
-			H_units[i].dest.row = 0;
-			H_units[i].dest.column = 0;
-			H_units[i].repr = 0;
-			H_units[i].speed = 0;
-			H_units[i].next_move_time = 0;
+			eat = &H_units[i];
+		}
+		else if (H_ai_units[i].pos.row == dest.row &&
+			H_ai_units[i].pos.column == dest.column) {
+			eat = &H_ai_units[i];
+		}
+		else if (s_units[i].pos.row == dest.row &&
+			s_units[i].pos.column == dest.column) {
+			eat = &s_units[i];
+		}
+		else if (Fremen_units[i].pos.row == dest.row &&
+			Fremen_units[i].pos.column == dest.column) {
+			eat = &Fremen_units[i];
+		}
+		else if (Fighter_units[i].pos.row == dest.row &&
+			Fighter_units[i].pos.column == dest.column) {
+			eat = &Fighter_units[i];
+		}
+		else if (T_units[i].pos.row == dest.row &&
+			T_units[i].pos.column == dest.column) {
+			eat = &T_units[i];
+		}
+
+		if (eat != NULL) {
+			// 찾은 유닛 초기화
+			eat->pos.row = 0;
+			eat->pos.column = 0;
+			eat->dest.row = 0;
+			eat->dest.column = 0;
+			eat->repr = 0;
+			eat->speed = 0;
+			eat->next_move_time = 0;
+
+			// 초기화 후 루프 종료
 			break;
 		}
 	}
@@ -224,15 +264,21 @@ BUILD_s S_buildings[10] = { 0 };
 BUILD_s A_buildings[10] = { 0 }; 
 BUILD_s F_buildings[10] = { 0 };
 
-void push_building(BUILD_s buildings[], POSITION pos, int durability) {
-	for (int i = 0; i < 10; i++) {
+void push_building(BUILD_s buildings[], POSITION pos, BUILD unit) {
+	for (int i = 0; i < 20; i++) {
 		if (buildings[i].exist == 0) {
 			buildings[i].exist = 1; // 배열에 들어갔는지 여부
 			buildings[i].pos = pos; // 위치
-			buildings[i].durability = durability; // 내구도
+			buildings[i].durability = unit.durability; // 내구도
+			buildings[i].ai = unit.ai;// ai 인지
 			return;
 		}
 	}
+}
+
+void initial_p(void) {
+	POSITION pos = { 1 ,MAP_WIDTH - 5 };
+	push_building(P_buildings, pos, P);
 }
 
 //============ 초기 상태 =============/
@@ -431,6 +477,11 @@ char Barracks1_account[5][100] = { "나는야~ 병영(b: Barracks) ","보병 생산하며,"
 char Barracks_command[5][100] = { "명령어 : 보병 생산(S: Soldier)"," ", " "," "," " };
 char Soldier_success[1][100] = { "새로운 [보병]이 생성되었습니다." };
 char Soldier_failure[1][100] = { "스파이스가 없어서 [보병] 생성이 안됩니다." };
+char Soldier_eat[1][100] = { "[샌드윔]이 [보병]을 먹었습니다." };
+char Soldier_account[5][100] = { "나는야~ 보병 ","생산비용: 1, 인구수 : 1"," 이동주기 : 400","공격력: 5, 공격주기:800", "원래 체력 : 15" };
+char units_command[5][100] = { "명령어 1 : 이동(M)","명령어 2 : 순찰(P)", " "," "," " };
+char Soldier_sistem[1][100] = { "[보병]이 [이동]합니다." };
+char Soldier_sistem1[1][100] = { "[보병]이 [순찰]합니다." };
 
 char Shelter_creation[1][100] = { "[은신처]가 생성되었습니다." };
 char Shelter_account[5][100] = { "스페이스를 눌러 생성하세요","은신처(S: Shelter) ","특수유닛 생산","건설비용 : 5","내구도 : 30" };
@@ -440,14 +491,18 @@ char Shelter_command[5][100] = { "명령어 : 프레멘 생산(F: Fremen) "," ", " "," "
 char Fremen_success[1][100] = { "새로운 [프레멘]이 생성되었습니다." };
 char Fremen_failure[1][100] = { "스파이스가 없어서 [프레멘] 생성이 안됩니다." };
 char Fremen_account[5][100] = { "나는야~ 프레멘 ","생산비용: 5, 인구수 : 2"," 이동주기 : 2000","공격력: 15, 공격주기:200", "원래 체력 : 25" };
+char Fremen_eat[1][100] = { "[샌드윔]이 [프레멘]을 먹었습니다." };
+char Fremen_sistem[1][100] = { "[프레멘]가 [이동]합니다" };
+char  Fremen_sistem1[1][100] = { "[프레멘]이 [순찰]합니다." };
 
 char harvester[5][100] = { "", "생산비용: 5, 인구수 : 5" ,"이동주기:2000", "공격력: 없음, 공격주기: 없음","원래 체력 : 70" };
 char harvester_command[5][100] = { "H: Harvest(수확)", " "," "," "," " };
 char harvester2_command[5][100] = { "원하는 스파이스로 커서를 이동 후 ", "명령어를 누르세요","M : move(이동)"," "," " };
-char H_sistem_success[1][100] = { "새로운 [하베스터]가 생성되었습니다." };
-char H_sistem_push[1][100] = { "[하베스터]가 선택되었습니다." };
-char H_sistem_failure[1][100] = { "스파이스가 없어서 [하베스터]가 생성이 안됩니다." };
-char M_sistem[1][100] = { "[하베스터]가 움직입니다." };
+char H_system_success[1][100] = { "새로운 [하베스터]가 생성되었습니다." };
+char H_system_push[1][100] = { "[하베스터]가 선택되었습니다." };
+char H_system_failure[1][100] = { "스파이스가 없어서 [하베스터]가 생성이 안됩니다." };
+char H_system_failure_stay[1][100] = { "H를 움직인 후 생성해주세요." };
+char M_system[1][100] = { "[하베스터]가 움직입니다." };
 
 char Sand[5][100] = { "나는야~ 샌드윔", "천천히 움직일게" ,"하지만 일반 유닛을 만나면 앙 먹어버릴거야", "가끔 배설도 해(생성 주기랑 매장량은 비밀)"," " };
 char random_space[1][100] = { "샌드윔이 스파이스를 생성했습니다." };
@@ -466,8 +521,7 @@ char AI_harvester[5][100] = { "나는야~ AI 하베스터", " ", " ", " "," " };
 char Arena[5][100]= { "나는 투기장", "투사 생산(f:fighter)가능하며 " ,"건설비용 : 3", "내구도:15"," " };
 char factory[5][100] = { "나는 공장", "특수유닛을 생산(T:hevy Tank)하며 " ,"건설비용 : 5", "내구도:30"," " };
 char fighter[5][100]= { "나는 투사(f:fighter)", "생산비용: 1, 인구수 : 1" ,"이동주기:1200", "공격력: 6, 공격주기: 600","원래 체력 : 10" };
-char Tank[5][100] = { "나는 공장(T:hevy Tank)", "생산비용: 12, 인구수 : 5" ,"이동주기:3000", "공격력: 40, 공격주기: 4000","원래 체력 : 60" };
-
+char Tank[5][100] = { "나는 중전차(T:hevy Tank)", "생산비용: 12, 인구수 : 5" ,"이동주기:3000", "공격력: 40, 공격주기: 4000","원래 체력 : 60" };
 void space_store(int num) { // 각 매장량 표시
 	char buff[100];
 	snprintf(buff, sizeof(buff),"매장량 : %d",num);
@@ -514,17 +568,28 @@ void sistem_letter(char arr[][100],char H_sistem[1][100]) {
 	esc_letter = 0;
 }
 
-void random_space_letter(int num) {
+void random_space_letter(int num, RESOURCE* resource) {
 	switch (num)
 	{
 	case 1: sistem_letter(sistem, random_space); break;
-	case 2: sistem_letter(sistem, eat_H); break;
+	case 2: sistem_letter(sistem, eat_H); (*resource).population -= Harvest.population; break;
 	case 3: sistem_letter(sistem, eat_space); break;
+	case 4: sistem_letter(sistem, Soldier_eat); (*resource).population -= Soldier.population;  break;
 	default:
 		break;
 	}
 }
 
+void division(POSITION pos1, RESOURCE* resource) {
+	for (int i = 0; i < 10; i++) {
+		if (Fremen_units[i].pos.row == pos1.row
+			&& Fremen_units[i].pos.column == pos1.column) {
+			sistem_letter(sistem, Fremen_eat);
+			(*resource).population -= Fremen.population;
+			break;
+		}
+	}
+}
 
 int apace_select;
 int Build_H_select = 0; // 하베스터에서 스페이스를 눌렀는지
@@ -538,26 +603,37 @@ void h_push(CURSOR cursor, RESOURCE* resource) {
 	if (Build_H_select==1 && backbuf[curr.row][curr.column] == 'H') {
 		Build_H_select += 1;
 		command_letter(harvester2_command);
-		sistem_letter(sistem, H_sistem_push);
+		sistem_letter(sistem, H_system_push);
 	}
 	else {
 		if ((*resource).spice - 5 >= 0) {
+			int H_it = 0;
 			if (apace_select == 1 && map[0][curr.row][curr.column] == 'B') {    //B 구간에서 선택 후 h를 눌렀을때
-				push_units(H_units, h_move, 70, Harvest);
-				sistem_letter(sistem, H_sistem_success);
-				map[1][h_move.row][h_move.column] = Harvest.symbol;
-				apace_select = 0;
-				(*resource).spice -= Harvest.spice_cost;
-				(*resource).population += Harvest.population;
+				if (map[1][MAP_HEIGHT - 4][2] == 'H' && map[1][MAP_HEIGHT - 4][1] == 'H') {
+					sistem_letter(sistem, H_system_failure_stay);
+					H_it = 1;
+				}
+				else if (map[1][MAP_HEIGHT - 4][2] == 'H' && map[1][MAP_HEIGHT - 4][1] != ' ') {
+					POSITION h_move = { MAP_HEIGHT - 4,1 };
+				}
+				if(H_it ==0){
+					push_units(H_units, h_move, 70, Harvest);
+					sistem_letter(sistem, H_system_success);
+					map[1][h_move.row][h_move.column] = Harvest.symbol;
+					apace_select = 0;
+					(*resource).spice -= Harvest.spice_cost;
+					(*resource).population += Harvest.population;
+				}
 			}
 		}
-		else sistem_letter(sistem, H_sistem_failure);
+		else sistem_letter(sistem, H_system_failure);
 	}
 }
 
 
 //6) 건설
 int Build_select = 0;
+POSITION unitpos = { 0 };;
 void B_push(void) { // B를 눌렀을때
 	if (Build_select == 0) {
 		command_letter(Build_list);
@@ -580,8 +656,39 @@ void P_push(void) { // 장판 P 눌렀을때
 		esc_state();
 		Build_select = 2;
 	}
-
 }
+
+int Build_B_select = 0;// 병영에서 스페이스를 눌렀는지
+int Build_S_select = 0;//은신처에서 스페이스를 눌렀는지
+int Build_s_select = 0;// 보병에서 스페이스를 눌렀는지
+int Build_f_select = 0;//프레멘에서 스페이스를 눌렀는지
+
+int H_num; // 구조체 배열 위치
+int s_num;
+int f_num;
+OBJECT_SAMPLE * P_unit_push(CURSOR cursor) {
+	POSITION curr = cursor.current;
+	if (Build_s_select == 1) {
+		s_units[s_num].dest = curr; // s 위치
+		sistem_letter(sistem, Soldier_sistem1);
+		mark_esc();
+		Build_s_select = 0;
+		s_units->originally_pos = unitpos;
+		s_units->P_push = 1;
+		return &s_units[s_num];
+	}
+	else if (Build_f_select == 1) {
+		Fremen_units[f_num].dest = curr; // f 위치
+		sistem_letter(sistem, Fremen_sistem1);
+		mark_esc();
+		Build_f_select = 0;
+		Fremen_units->originally_pos = unitpos;
+		Fremen_units->P_push = 1;
+		return &Fremen_units[f_num];
+	}
+	return 0;
+}
+
 void D_push(void) { // 숙소 D 눌렀을때
 	if (Build_select == 1) {
 		for (int i = 0; i < 45; i++) {
@@ -610,8 +717,6 @@ void G_push(void) { // 창고 G 눌렀을때
 	}
 }
 
-int Build_B_select = 0;// 병영에서 스페이스를 눌렀는지
-int Build_S_select = 0;//은신처에서 스페이스를 눌렀는지
 
 void Barracks_push(void) { // 병영 B 눌렀을때
 	if (Build_select == 1) {
@@ -653,7 +758,7 @@ void F_push(CURSOR cursor, RESOURCE* resource) {
 	POSITION curr = cursor.current;
 	if (Build_S_select == 1) {
 		POSITION produce = produce_position(cursor);//랜덤으로 위치 생성
-		if ((*resource).spice - 1 >= 0&& (produce.row != curr.row || produce.column != curr.column)) {
+		if ((*resource).spice - Fremen.spice_cost >= 0&& (produce.row != curr.row || produce.column != curr.column)) {
 			sistem_letter(sistem, Fremen_success);
 			map[1][produce.row][produce.column] = Fremen.symbol;
 			Build_B_select = 0;
@@ -665,22 +770,38 @@ void F_push(CURSOR cursor, RESOURCE* resource) {
 	}
 }
 
-int H_num; // 구조체 배열 위치
 OBJECT_SAMPLE* M_push(CURSOR cursor) {
 	POSITION curr = cursor.current;
 	if (Build_H_select == 2 && backbuf[curr.row][curr.column] >= '1' && backbuf[curr.row][curr.column] <= '9') {
 		H_units[H_num].dest = curr;
-		sistem_letter(sistem, M_sistem);
+		sistem_letter(sistem, M_system);
 		mark_esc();
-		Build_H_select = 0;
+		H_units[H_num].M_push = 1;
+		Build_H_select = 0; 
 		return &H_units[H_num];
+	}
+	else if (Build_s_select == 1) {
+		s_units[s_num].dest = curr; // s 위치
+		sistem_letter(sistem, Soldier_sistem);
+		mark_esc();
+		s_units[s_num].M_push = 1;
+		Build_s_select = 0;
+		return &s_units[s_num];
+	}
+	else if (Build_f_select = 1) {
+		Fremen_units[f_num].dest = curr; // f 위치
+		sistem_letter(sistem, Fremen_sistem);
+		mark_esc();
+		Fremen_units[f_num].M_push = 1;
+		Build_f_select = 0;
+		return &Fremen_units[f_num];
 	}
 	return NULL; // 조건을 만족하지 않을 때 NULL 반환
 }
 
 POSITION produce_position(CURSOR cursor) {
 	POSITION curr = cursor.current;
-	POSITION empty_positions[4];
+	POSITION empty_positions[4] = { 0 };
 	int empty_count = 0;
 
 	// 2x2 영역 내의 빈 공간 찾기
@@ -725,13 +846,11 @@ void Building(CURSOR cursor, RESOURCE* resource, BUILD* name, char H_sistem[1][1
 		state_letter(state);
 		switch ((*name).symbol)
 		{
-		case 'P': push_building(P_buildings, curr,0); break;
-		case 'D': push_building(D_buildings, curr,10); break;
-		case 'G': push_building(G_buildings, curr,10); break;
-		case 'B': push_building(B_buildings, curr,20); break;
-		case 'S': push_building(S_buildings, curr,30); break;
-		case 'A': push_building(A_buildings, curr, 15); break;
-		case 'F': push_building(F_buildings, curr, 30); break;
+		case 'P': push_building(P_buildings, curr, *name); break;
+		case 'D': push_building(D_buildings, curr, *name); break;
+		case 'G': push_building(G_buildings, curr, *name); break;
+		case 'B': push_building(B_buildings, curr, *name); break;
+		case 'S': push_building(S_buildings, curr, *name); break;
 		default:
 			break;
 		}
@@ -739,7 +858,71 @@ void Building(CURSOR cursor, RESOURCE* resource, BUILD* name, char H_sistem[1][1
 	}
 }
 
+void AI_Building(RESOURCE* resource, BUILD* name) {
+	int rand_row = 0; int rand_col =0;
+	if (name->symbol == 'P') {
+		while (1) {
+			int row = MAP_WIDTH / 2;
+			// 맵의 오른쪽 절반에만 생성되도록 수정
+			rand_col = rand() % (row - 4) + row + 2;  // 중앙보다 오른쪽으로 2칸 이상 떨어지게
+			int col = MAP_HEIGHT / 2;
+			rand_row = rand() % (col - 4) + 2;  // 위아래 여유 공간 확보
 
+			// 건물 공간이 모두 비어있는지 확인
+			int cnt = 0;
+			int can_build = 1;
+			for (int i = 0; i < 2; i++) {
+				for (int j = 0; j < 2; j++) {
+					if (backbuf[rand_row + i][rand_col + j] != ' ') {
+						can_build = 0;
+						break;
+					}
+				}
+				if (!can_build) break;
+			}
+
+			// 모든 공간이 비어있을 때만 건설 진행
+			if (can_build && rand_row == 3 && (rand_col != MAP_HEIGHT -2 || rand_col != MAP_HEIGHT-3))
+				break;
+		}
+	}
+	else {
+		for (int i = 0; i < 10; i++) {
+			if (P_buildings[i].exist == 1) {
+				rand_row = P_buildings[i].pos.row;
+				rand_col = P_buildings[i].pos.column;
+				P_buildings[i].exist = 0;
+				P_buildings[i].pos.row = 0;
+				P_buildings[i].pos.column = 0;
+				break;
+			}
+		}
+	}
+
+	if (resource->spice >= name->spice_cost) {
+		POSITION pos_building = { rand_row,rand_col };
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				POSITION pos = { pos_building.row + i, pos_building.column + j };
+				map[0][pos.row][pos.column] = (*name).symbol;
+			}
+		}
+		(*resource).spice -= (*name).spice_cost;
+		(*resource).spice_max += (*name).spice_increase;
+		(*resource).population_max += (*name).population_increase;
+		switch ((*name).symbol)
+		{
+		case 'P': push_building(P_buildings, pos_building, *name); break;
+		case 'D': push_building(D_buildings, pos_building, *name); break;
+		case 'G': push_building(G_buildings, pos_building, *name); break;
+		case 'A': push_building(A_buildings, pos_building, *name); break;
+		case 'F': push_building(F_buildings, pos_building, *name); break;
+		default:
+			break;
+		}
+		Build_select = 0;
+	}
+}
 //2)커서 & 상태창
 //스페이스바를 눌렀을때 
 void object_info_mark(CURSOR cursor, RESOURCE* resource) {
@@ -748,7 +931,7 @@ void object_info_mark(CURSOR cursor, RESOURCE* resource) {
 	if (Build_select == 2 && backbuf[curr.row][curr.column] == ' ') {
 		Building(cursor, resource, &P, Plate_creation, Plate);
 	}
-	else if (backbuf[curr.row][curr.column] == 'P' &&
+	else if (Build_select == 1&&backbuf[curr.row][curr.column] == 'P' &&
 		backbuf[curr.row + 1][curr.column] == 'P' &&
 		backbuf[curr.row][curr.column + 1] == 'P' &&
 		backbuf[curr.row + 1][curr.column + 1] == 'P') {
@@ -797,7 +980,7 @@ void object_info_mark(CURSOR cursor, RESOURCE* resource) {
 		case 'H':
 			for (int i = 0; i < 10; i++) {
 				if (H_units[i].pos.row == curr.row
-					&& H_units[i].pos.column == curr.column) {
+					&& H_units[i].pos.column == curr.column) { //11/26 이걸 고쳐서 해야함
 					H_num = i;
 					state_letter(harvester); H_number(H_num); command_letter(harvester_command);
 					Build_H_select = 1;
@@ -812,44 +995,43 @@ void object_info_mark(CURSOR cursor, RESOURCE* resource) {
 			if (curr.row > MAP_HEIGHT / 2) {
 				state_letter(Base); command_letter(Base_command);
 				apace_select = 1;
-				/*else if (key == 'M' || key == 'm') {
-					sistem_letter(M_sistem);
-					int up_down = rand() % 12;
-					if (up_down == 0) {
-						h_move.column++;
-						map[1][h_move.row][h_move.column] = SYMBOL_HARVESTER;
-					}
-					else {
-						h_move.row--;
-						map[1][h_move.row][h_move.column] = SYMBOL_HARVESTER;
-					}
-					}*/
 				break;
 			}
 			else {
 				state_letter(AI);
 				break;
 			}
-		case 'D':state_letter(Dormitory_account); break;
-		case 'G':state_letter(Garage1_account); break;
+		case 'D':state_letter(Dormitory_account); break;//숙소
+		case 'G':state_letter(Garage1_account); break;//창고
 		case 'b': state_letter(Barracks1_account); command_letter(Barracks_command); Build_B_select = 1; break;//병영
 		case 'S': state_letter(Shelter1_account); command_letter(Shelter_command); Build_S_select = 1; break;//은신처
-		case 'F':state_letter(Garage1_account); break;//공장
-		case 'A':state_letter(Garage1_account); break;//투기장
-		case 'T':state_letter(Garage1_account); break;//중전차
-		case 'f':
+		case 'F':state_letter(fighter); break;//공장
+		case 'A':state_letter(Arena); break;//투기장
+		case 'T':state_letter(Tank); break;//중전차
+		case 's':   
+			for (int i = 0; i < 10; i++) {
+			if (s_units[i].pos.row == curr.row
+				&& s_units[i].pos.column == curr.column) {
+				s_num = i;
+				state_letter(Soldier_account); command_letter(units_command);
+				Build_s_select = 1;
+				unitpos = curr;
+				break;
+			}
+		}//보병
+		case 'f': // 프레멘, 투사
 			for (int i = 0; i < 10; i++) {
 				if (Fremen_units[i].pos.row == curr.row
 					&& Fremen_units[i].pos.column == curr.column) {
-					num = i;
-					state_letter(harvester); command_letter(harvester_command);
-					Build_H_select = 1;
+					f_num = i;
+					state_letter(Fremen_account); command_letter(units_command);
+					Build_f_select = 1;
+					unitpos = curr;
 					break;
 				}
-				else {
+			}
+			if(Build_H_select ==0){
 					state_letter(AI_harvester); //투사
-					break;
-				}
 			}
 		 break;
 		case '1':space_store(1); state_letter(Space); break;
@@ -897,6 +1079,8 @@ void esc_choice(CURSOR cursor, RESOURCE* resource) { //esc 눌렀을 경우 지우고 H 
 	apace_select = 0; // H 생성 취소
 	Build_H_select = 0; // H 수확 취소
 	Build_S_select = 0;
+	Build_s_select = 0;
+	Build_f_select = 0;
 	POSITION curr = cursor.current;
 	if (Build_select >= 2) {
 		for (int i = 0; i < 2; i++) {
@@ -910,7 +1094,6 @@ void esc_choice(CURSOR cursor, RESOURCE* resource) { //esc 눌렀을 경우 지우고 H 
 	Build_select = 0; // B 누른거 선택 취소
 }
 
-// subfunction of draw_map()
 void project(char src[N_LAYER][MAP_HEIGHT][MAP_WIDTH], char dest[MAP_HEIGHT][MAP_WIDTH]) {
 	for (int i = 0; i < MAP_HEIGHT; i++) {
 		for (int j = 0; j < MAP_WIDTH; j++) {
@@ -1018,7 +1201,6 @@ POSITION  SANDWORM_find(POSITION worm_position) {
 	return closest_h;
 }
 
-
 int find_space_positions(POSITION num_positions[]) {
 	int count = 0;
 	for (int i = 0; i < MAP_HEIGHT; i++) {
@@ -1034,17 +1216,27 @@ int find_space_positions(POSITION num_positions[]) {
 }
 
 
-POSITION  space_find(POSITION space_position) {
+POSITION  space_find(POSITION space_position, int ai_player) {
 	POSITION space_positions[50]; //스페이스 위치
 	int num_H = find_space_positions(space_positions); // 스페이스 위치
 
 	if (num_H == 0) {
 		// 없으면 기본값 반환
-		if (backbuf[MAP_HEIGHT - 4][1] == ' ') {
-			return (POSITION) { MAP_HEIGHT - 4, 1 };
+		if (ai_player == 1) {
+			if (backbuf[MAP_HEIGHT - 4][1] == ' ') {
+				return (POSITION) { MAP_HEIGHT - 4, 1 };
+			}
+			else {
+				return (POSITION) { MAP_HEIGHT - 4, 2 };
+			}
 		}
 		else {
-			return (POSITION) { MAP_HEIGHT - 4, 2 };
+			if (backbuf[3][MAP_WIDTH - 2] == ' ') {
+				return (POSITION) { 3, MAP_WIDTH - 2 };
+			}
+			else {
+				return (POSITION) { 3, MAP_WIDTH - 3 };
+			}
 		}
 	}
 
@@ -1061,3 +1253,5 @@ POSITION  space_find(POSITION space_position) {
 	}
 	return closest_h;
 }
+
+

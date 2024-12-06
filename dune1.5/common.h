@@ -11,7 +11,7 @@
 #define TICK 10		// time unit(ms)
 #define DOUBLE_CLICK_INTERVAL 1000
 
-#define N_LAYER 2
+#define N_LAYER 3
 #define MAP_WIDTH	60
 #define MAP_HEIGHT	18
 
@@ -115,7 +115,11 @@ typedef struct {
 	int next_move_time;	// 다음에 움직일 시간
 	int speed;
 	int strength; // 체력
-} OBJECT_SAMPLE;
+	int space_number; // 각 스파이스 채취량
+	int M_push;
+	int P_push;
+	POSITION originally_pos;
+}OBJECT_SAMPLE;
 
 typedef struct {
 	bool exist;
@@ -125,12 +129,14 @@ typedef struct {
 	int population_increase; // 인구 최대치 증가
 	int spice_increase;//스파이스 보관 최대치 증가
 	int durability; // 내구도
+	int ai;
 }BUILD;
 
 typedef struct {
 	bool exist;
 	POSITION pos; // 현재 위치(좌상단)
 	int durability; // 내구도
+	int ai;
 }BUILD_s;
 
 typedef struct {

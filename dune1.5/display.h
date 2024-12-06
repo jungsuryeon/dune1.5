@@ -19,10 +19,14 @@
 // 앞으로 화면에 표시할 내용들 여기에 추가하기
 void display(
 	RESOURCE resource,
-	char map[N_LAYER][MAP_HEIGHT][MAP_WIDTH],
+	char map[N_LAYER][MAP_HEIGHT][MAP_WIDTH], 
 	CURSOR cursor
 );
 
+extern OBJECT_SAMPLE H_ai_units[20];
+extern BUILD D; 
+extern BUILD G;
+extern BUILD_s P_buildings[10];
 void display_system_message(void);
 void display_object_info(void);
 void display_commands(void);
@@ -32,19 +36,28 @@ void mark_esc(void);
 void h_push(CURSOR cursor, RESOURCE* resource);
 void B_push(void);
 void P_push(void);
+OBJECT_SAMPLE* P_unit_push(CURSOR cursor);
 void D_push(void);
 void G_push(void);
 void S_push(CURSOR cursor, RESOURCE* resource);
+void F_push(CURSOR cursor, RESOURCE* resource);
 OBJECT_SAMPLE* M_push(CURSOR cursor);
 void sistem_letter(char arr[][100], char H_sistem[1][100]);
-void random_space_letter(int num);
+void random_space_letter(int num, RESOURCE* resource);
 char Build_base[5][100];
 void command_letter(char arr[][100]);
 void initial_H(void);
+void initial_ai_H(void);
 int Build_select;
 void reset(POSITION dest);
 int find_H_positions(POSITION H_positions[]);
 POSITION  SANDWORM_find(POSITION worm_position);
-POSITION  space_find(POSITION space_position);
-
+POSITION  space_find(POSITION space_position, int ai_player);
+void division(POSITION pos1, RESOURCE* resource);
+int push_units(OBJECT_SAMPLE units[], POSITION pos, int strength, UNIT unit);
+int find_space_positions(POSITION num_positions[]); 
+void Building(CURSOR cursor, RESOURCE* resource, BUILD* name, char H_sistem[1][100], char state[5][100]);
+UNIT Soldier;
+void AI_Building(RESOURCE* resource, BUILD* name);
+void initial_p(void);
 #endif
