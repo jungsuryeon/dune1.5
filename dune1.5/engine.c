@@ -22,6 +22,8 @@ void P_obj_move(OBJECT_SAMPLE* name);
 POSITION P_obj_next_position(OBJECT_SAMPLE* name);
 static clock_t last_key_time = 0;
 OBJECT_SAMPLE* ai_H_move(int num);
+void unit_attack(OBJECT_SAMPLE* name);
+void enemy_bild(OBJECT_SAMPLE* name, BUILD_s build[]);
 
 /* ================= control =================== */
 int sys_clock = 0;		// system-wide clock(ms)
@@ -77,6 +79,25 @@ BUILD P_ai = { //ai 장판
 	.spice_cost = 1, // 건설비용
 	.population_increase = 0, // 인구 최대치 증가
 	.spice_increase = 0,//스파이스 보관 최대치 증가
+	.durability = 0,
+	.ai = 1
+};
+
+BUILD D_ai = { //ai 장판
+	.symbol = 'D', // 화면 표시
+	.spice_cost = 2, // 건설비용
+	.population_increase = 10, // 인구 최대치 증가
+	.spice_increase = 0,//스파이스 보관 최대치 증가
+	.durability = 10,
+	.ai = 1
+};
+
+BUILD G_ai = { //ai 장판
+	.symbol = 'G', // 화면 표시
+	.spice_cost = 4, // 건설비용
+	.population_increase = 0, // 인구 최대치 증가
+	.spice_increase = 10,//스파이스 보관 최대치 증가
+	.durability = 10,
 	.ai = 1
 };
 
@@ -102,7 +123,7 @@ BUILD F = {
 bool is_double_click = false;
 int sandworm_next_move_time = 1000;
 OBJECT_SAMPLE* H_ptr[40] = { 0 };
-OBJECT_SAMPLE* M_ptr[40] = { 0 }; 
+OBJECT_SAMPLE* P_ptr[40] = { 0 }; 
 OBJECT_SAMPLE H_ai_units[20] = { 0 };
 extern UNIT Harvest;
 
@@ -126,11 +147,9 @@ int main(void) {
 	int H_move = 0;
 	KEY last_key = 0;
 	int ai_H_num = 0; // H가 몇개 있는지
-
-	//2) 커서 & 상태창
 	ai_H_move(0);
 
-
+	//2) 커서 & 상태창
 	while (1) {
 		// loop 돌 때마다(즉, TICK==10ms마다) 키 입력 확인
 		KEY key = get_key();
@@ -160,7 +179,7 @@ int main(void) {
 			case k_esc:mark_esc();  esc_choice(cursor, &resource); break;
 			case k_Hd: h_push(cursor, &resource); break;
 			case K_Bd: B_push(); break;
-			case K_Pd:  P_push(); M_ptr[num2] = P_unit_push(cursor); num2++; break;
+			case K_Pd: P_push(); P_ptr[num2] = P_unit_push(cursor); num2++; break;
 			case K_Dd: D_push(); break;
 			case K_Gd: G_push(); break;
 			case K_Sd: S_push(cursor, &resource); break;
@@ -178,14 +197,10 @@ int main(void) {
 			}
 		}
 		for (int i = 0; i < num2; i++) {
-			if (M_ptr[i] != NULL && (*M_ptr[i]).P_push == 1) {
-				P_obj_move(M_ptr[i]);
+			if (P_ptr[i] != NULL && (*P_ptr[i]).P_push == 1) {
+				P_obj_move(P_ptr[i]);
 			}
 		}
-
-		//if (H_ai_units[0].exist != 0) { //  AI 초기 H
-		//	H_obj_move(&H_ai_units[0]);
-		//}
 
 		POSITION space_positions[50] = { 0 };
 		int space_cnt = find_space_positions(space_positions); 
@@ -226,15 +241,15 @@ int main(void) {
 			if ( AI_resource.spice >=20 ) {
 				for (int i = 0; i < 10; i++) {
 					if (P_buildings[i].exist == 1) {
-						AI_Building(&AI_resource, &G);
+						AI_Building(&AI_resource, &G_ai);
 						break;
 					}
 				}
 			}
-			if (AI_resource.population>=0) {
+			if (AI_resource.population>=20) {
 				for (int i = 0; i < 10; i++) {
 					if (P_buildings[i].exist == 1) {
-						AI_Building(&AI_resource, &D);
+						AI_Building(&AI_resource, &D_ai);
 						break;
 					}
 				}
@@ -471,9 +486,19 @@ void sample_obj_move(OBJECT_SAMPLE* name) {
 	// 오브젝트(건물, 유닛 등)은 layer1(map[1])에 저장
 	map[layer][(*name).pos.row][(*name).pos.column] = -1;
 	(*name).pos = sample_obj_next_position(name);
+	if (map[1][(*name).pos.row][(*name).pos.column] == 'H') {
+		for (int i = 0; i < 10; i++) {
+			if (H_units[i].pos.row == (*name).pos.row &&
+				H_units[i].pos.column == (*name).pos.column) {
+				random_space_letter(2, &resource); resource.population_max -= Harvest.population; reset((*name).dest); break;
+			}
+			else {
+				AI_resource.population -= Harvest.population; // ai 인구수 감소
+			}
+		}
+	}
 	switch (map[1][(*name).pos.row][(*name).pos.column])
 	{
-	case 'H': random_space_letter(2, &resource); reset((*name).dest); break;
 	case 's': random_space_letter(4, &resource); reset((*name).dest); break;
 	case 'f': division((*name).pos, &resource); reset((*name).dest); break;
 	case 'T': reset((*name).dest); break; // 중전차
@@ -517,7 +542,7 @@ POSITION H_obj_next_position(OBJECT_SAMPLE* name) {
 	DIRECTION dir;
 	// 목적지 도착
 	if (diff.row == 0 && diff.column == 0) {
-		if ((*name).M_push==1&&(*name).dest.row == MAP_HEIGHT - 4 && ((*name).dest.column == 1
+		if ((*name).M_push == 1 && (*name).dest.row == MAP_HEIGHT - 4 && ((*name).dest.column == 1
 			|| (*name).dest.column == 2)) {
 			POSITION new_dest = space_find((*name).dest, (*name).M_push);
 			(*name).dest = new_dest;
@@ -549,7 +574,7 @@ POSITION H_obj_next_position(OBJECT_SAMPLE* name) {
 		1 <= next_pos.column && next_pos.column <= MAP_WIDTH - 2) {
 		if ((*name).repr == 'H') {
 			if (map[1][next_pos.row][next_pos.column] == 'H' || map[1][next_pos.row][next_pos.column] == 'W') {
-				if (MAP_HEIGHT - 4 == next_pos.row && 1 == next_pos.column &&map[1][MAP_HEIGHT - 4][1] == 'H') {
+				if (MAP_HEIGHT - 4 == next_pos.row && 1 == next_pos.column && map[1][MAP_HEIGHT - 4][1] == 'H') {
 					POSITION new_dest = { MAP_HEIGHT - 4, 2 };
 					(*name).dest = new_dest;
 				}
@@ -570,13 +595,26 @@ POSITION H_obj_next_position(OBJECT_SAMPLE* name) {
 			}
 		}
 		else {
-			if(map[1][next_pos.row][next_pos.column] == 'B'
-				|| map[1][next_pos.row][next_pos.column] == 'P'
-				|| map[1][next_pos.row][next_pos.column] == 'D'
-				|| map[1][next_pos.row][next_pos.column] == 'G'
-				|| map[1][next_pos.row][next_pos.column] == 'A'
-				|| map[1][next_pos.row][next_pos.column] == 'F')
+			if (map[0][next_pos.row][next_pos.column] == map[0][(*name).dest.row][(*name).dest.column]&&
+				next_pos.row == (*name).dest.row && next_pos.column == (*name).dest.column) {
 				return (*name).pos;
+			}
+			else if (map[1][next_pos.row][next_pos.column] == 'H' 
+				|| map[1][next_pos.row][next_pos.column] == 'W'
+				||map[0][next_pos.row][next_pos.column] == 'B'
+				|| map[0][next_pos.row][next_pos.column] == 'P'
+				|| map[0][next_pos.row][next_pos.column] == 'D'
+				|| map[0][next_pos.row][next_pos.column] == 'G'
+				|| map[0][next_pos.row][next_pos.column] == 'A'
+				|| map[0][next_pos.row][next_pos.column] == 'F') {
+				if (dir == d_down || dir == d_up) {
+					dir = (diff.column >= 0) ? d_right : d_left;
+				}
+				else {
+					dir = (diff.row >= 0) ? d_down : d_up;
+				}
+				next_pos = pmove((*name).pos, dir);
+			}
 		}
 		return next_pos;
 	}
@@ -585,9 +623,9 @@ POSITION H_obj_next_position(OBJECT_SAMPLE* name) {
 	}
 }
 
-
 //하베스터 움직이는 것
 void H_obj_move(OBJECT_SAMPLE* name) {
+	int one_acttck = 0;
 	if (sys_clock <= (*name).next_move_time) {
 		// 아직 시간이 안 됐음
 		return;
@@ -595,37 +633,57 @@ void H_obj_move(OBJECT_SAMPLE* name) {
 	// 오브젝트(건물, 유닛 등)은 layer1(map[1])에 저장
 	map[1][(*name).pos.row][(*name).pos.column] = -1;
 	(*name).pos = H_obj_next_position(name);
-	if (map[0][(*name).pos.row][(*name).pos.column] >= '1' &&
-		map[0][(*name).pos.row][(*name).pos.column] <= '9') { // 스파이스를 먹는것
-		char result = over_pay(name, map[0][(*name).pos.row][(*name).pos.column]);
-		if (result == '0') {
-			map[0][(*name).pos.row][(*name).pos.column] = ' ';
+	if ((*name).repr == 'H') {
+		if (map[0][(*name).pos.row][(*name).pos.column] >= '1' &&
+			map[0][(*name).pos.row][(*name).pos.column] <= '9') { // 스파이스를 먹는것
+			char result = over_pay(name, map[0][(*name).pos.row][(*name).pos.column]);
+			if (result == '0') {
+				map[0][(*name).pos.row][(*name).pos.column] = ' ';
+			}
+			else {
+				map[0][(*name).pos.row][(*name).pos.column] = result;
+			}
+			if ((*name).M_push == 1) {
+				random_space_letter(3, &resource);
+				POSITION new_dest = { MAP_HEIGHT - 4 , 1 };
+				(*name).dest = new_dest;
+			}
+			else {
+				POSITION new_dest = { 3 ,MAP_WIDTH - 2 };
+				(*name).dest = new_dest;
+			}
 		}
-		else {
-			map[0][(*name).pos.row][(*name).pos.column] = result;
+		else if ((*name).pos.row == MAP_HEIGHT - 4 && ((*name).pos.column == 1 || (*name).pos.column == 2)) {
+			if (resource.spice_max - ((*name).space_number + (*name).space_number) >= 0) { // 스파이스가 넘으면 안넣어짐
+				resource.spice += (*name).space_number;
+			}
+			(*name).space_number = 0;
 		}
-		if ((*name).M_push == 1) {
-			random_space_letter(3, &resource);
-			POSITION new_dest = { MAP_HEIGHT - 4 , 1 };
-			(*name).dest = new_dest;
-		}
-		else {
-			POSITION new_dest = { 3 ,MAP_WIDTH - 2 };
-			(*name).dest = new_dest;
+		else if ((*name).pos.row == 3 && ((*name).pos.column == MAP_WIDTH - 2 || (*name).pos.column == MAP_WIDTH - 3)) {
+			if (AI_resource.spice_max - ((*name).space_number + (*name).space_number) >= 0) {
+				AI_resource.spice += (*name).space_number;
+			}
+			(*name).space_number = 0;
+
 		}
 	}
-	else if ((*name).pos.row == MAP_HEIGHT - 4 && ((*name).pos.column == 1|| (*name).pos.column == 2)){
-		if (resource.spice_max - ((*name).space_number + (*name).space_number) >= 0) { // 스파이스가 넘으면 안넣어짐
-			resource.spice += (*name).space_number;
+	else if ((*name).repr == 'f' || (*name).repr == 's') {
+		if (abs((*name).pos.row - (*name).dest.row) + abs((*name).pos.column - (*name).dest.column) == 1) {
+			if (sys_clock % (*name).attack_time == 0&& one_acttck==0) {
+				// map 좌표 참조 오류 수정
+				switch (map[0][(*name).dest.row][(*name).dest.column])
+				{
+				case 'P': enemy_bild(name, P_buildings); break;
+				case 'D': enemy_bild(name, D_buildings); break;
+				case 'G': enemy_bild(name, G_buildings); break;
+				case 'A': enemy_bild(name, A_buildings); break;
+				case 'F': enemy_bild(name, F_buildings); break;
+				default:
+					break;
+				}
+				one_acttck = 1;
+			}
 		}
-		(*name).space_number = 0;
-	}
-	else if ((*name).pos.row == 3 && ((*name).pos.column == MAP_WIDTH - 2 || (*name).pos.column == MAP_WIDTH - 3)){
-		if (AI_resource.spice_max - ((*name).space_number + (*name).space_number) >= 0) {
-			AI_resource.spice += (*name).space_number;
-		}
-		(*name).space_number = 0;
-		
 	}
 	map[1][(*name).pos.row][(*name).pos.column] = (*name).repr;
 	(*name).next_move_time = sys_clock + (*name).speed;
@@ -662,6 +720,10 @@ POSITION P_obj_next_position(OBJECT_SAMPLE* name) {
 
 	if (1 <= next_pos.row && next_pos.row <= MAP_HEIGHT - 2 && 
 		1 <= next_pos.column && next_pos.column <= MAP_WIDTH - 2) {
+		if (map[0][next_pos.row][next_pos.column] == map[0][(*name).dest.row][(*name).dest.column] &&
+			next_pos.row == (*name).dest.row && next_pos.column == (*name).dest.column) {
+			return (*name).pos;
+		}
 		return next_pos;
 	}
 	else {
@@ -669,13 +731,12 @@ POSITION P_obj_next_position(OBJECT_SAMPLE* name) {
 	}
 }
 
-
 void P_obj_move(OBJECT_SAMPLE* name) {
 	if (sys_clock <= (*name).next_move_time) {
 		// 아직 시간이 안 됐음
 		return;
 	}
-	// 오브젝트(건물, 유닛 등)은 layer1(map[1])에 저장
+	//unit_attack(name); // 근처에 유닛이 있으면 목표지를 바꿈
 	map[1][(*name).pos.row][(*name).pos.column] = -1;
 	(*name).pos = P_obj_next_position(name);
 	map[1][(*name).pos.row][(*name).pos.column] = (*name).repr;
@@ -683,7 +744,75 @@ void P_obj_move(OBJECT_SAMPLE* name) {
 }
 
 
+void enemy_bild(OBJECT_SAMPLE* name, BUILD_s build[]) { //P 수정
+	//위치 찾기 및 해당 내구도가 깎임
+	int found = 0;
+	int num = 0;
+	for (int i = 0; i < 10 && !found; i++) {
+		if (build[i].exist == 1) {
+			for (int j = 0; j < 2 && !found; j++) {
+				for (int x = 0; x < 2 && !found; x++) {
+					POSITION pos = { build[i].pos.row + j, build[i].pos.column + x };
+					if (name->dest.row == pos.row && name->dest.column == pos.column) {
+						build[i].durability -= name->aggressive_strength;
+						num = i;
+						found = 1;
+					}
+				}
+			}
+		}
+	}
 
+	if (build[num].durability <= 0) { //내구도가 없으면 없어짐
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				POSITION pos = { build[num].pos.row + i, build[num].pos.column + j };
+				map[0][pos.row][pos.column] = ' ';
+			}
+		}
+		build[num].exist = 0; // 배열에 들어갔는지 여부
+		build[num].pos.row = 0; // 위치
+		build[num].pos.column = 0; // 위치
+		build[num].durability = 0; // 내구도
+		build[num].ai = 0;// ai 인지
+		sistem_letter(sistem, attack_buildings);
+	}
+
+}
+
+void unit_attack(OBJECT_SAMPLE* name) {
+	int check_row = 0;
+	int check_col = 0;
+	for (int i = -1; i <= 1; i++) {
+		for (int j = -1; j <= 1; j++) {
+			if ((*name).repr == 'f') {
+				check_row = (*name).pos.row + i;
+				check_col = (*name).pos.column + j;
+			}
+			else if((*name).repr == 'T' && i!=j){
+				check_row = (*name).pos.row + i;
+				check_col = (*name).pos.column + j;
+			}
+
+			// 맵 범위 체크
+			if (check_row < 1 || check_row >= MAP_HEIGHT - 1 ||
+				check_col < 1 || check_col >= MAP_WIDTH - 1)
+				continue;
+
+			// 적 유닛 발견 시
+			if (map[1][check_row][check_col] == 'f' ||
+				map[1][check_row][check_col] == 't') {
+				// 적 위치로 목적지 변경
+				(*name).original_dest.row = (*name).dest.row;
+				(*name).original_dest.column = (*name).dest.column;
+				(*name).dest.row = check_row;
+				(*name).dest.column = check_col;
+				return;
+			}
+		}
+	}
+
+}
 
 //============ai=======
 

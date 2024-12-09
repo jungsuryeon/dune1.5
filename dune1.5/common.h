@@ -118,7 +118,10 @@ typedef struct {
 	int space_number; // 각 스파이스 채취량
 	int M_push;
 	int P_push;
+	int aggressive_strength; // 공격력
+	int attack_time;// 공격주기
 	POSITION originally_pos;
+	POSITION original_dest;
 }OBJECT_SAMPLE;
 
 typedef struct {
@@ -145,7 +148,7 @@ typedef struct {
 	int population; // 현재 인구 수 증가
 	int move_period; // 이동주기
 	int aggressive_strength; // 공격력
-	int attack;// 공격주기
+	int attack_time;// 공격주기
 	int view;// 시야
 }UNIT;
 

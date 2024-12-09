@@ -24,9 +24,25 @@ void display(
 );
 
 extern OBJECT_SAMPLE H_ai_units[20];
-extern BUILD D; 
-extern BUILD G;
+extern OBJECT_SAMPLE H_units[20];
+extern  BUILD_s P_buildings[10];
+extern char attack_buildings[1][100];
+extern char sistem[5][100];
+
+extern UNIT Harvest;
+extern UNIT Fremen;
+extern UNIT Soldier;
+extern UNIT Fighter;
+extern UNIT heavy_Tank;
+
 extern BUILD_s P_buildings[10];
+extern BUILD_s D_buildings[10];
+extern BUILD_s G_buildings[10];
+extern BUILD_s B_buildings[10];
+extern BUILD_s S_buildings[10];
+extern BUILD_s A_buildings[10];
+extern BUILD_s F_buildings[10];
+
 void display_system_message(void);
 void display_object_info(void);
 void display_commands(void);
