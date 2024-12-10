@@ -27,7 +27,11 @@ extern OBJECT_SAMPLE H_ai_units[20];
 extern OBJECT_SAMPLE H_units[20];
 extern  BUILD_s P_buildings[10];
 extern char attack_buildings[1][100];
-extern char sistem[5][100];
+extern char sistem[7][100];
+
+extern OBJECT_SAMPLE Fighter_units[20] ;
+extern OBJECT_SAMPLE T_units[20] ;
+extern char attack_unit[1][100];
 
 extern UNIT Harvest;
 extern UNIT Fremen;

@@ -148,8 +148,8 @@ UNIT Soldier = { //보병
 	.symbol = 's',// 화면 표시
 	.spice_cost = 1, // 생산비용
 	.population = 1, // 현재 인구 수 증가
-	.move_period = 1000, // 이동주기
-	.aggressive_strength = 5, // 공격력
+	.move_period = 10, // 이동주기
+	.aggressive_strength = 40, // 공격력
 	.attack_time = 800,// 공격주기
 	.view = 1// 시야
 };
@@ -184,7 +184,7 @@ OBJECT_SAMPLE T_units[20] = { 0 };
 
 
 int push_units(OBJECT_SAMPLE units[], POSITION pos, int strength, UNIT unit) {
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 20; i++) {
 		if (units[i].exist == 0) {
 			units[i].exist = 1; // 배열에 들어갔는지 여부
 			units[i].pos = pos; // 위치
@@ -274,6 +274,7 @@ void push_building(BUILD_s buildings[], POSITION pos, BUILD unit) {
 			buildings[i].pos = pos; // 위치
 			buildings[i].durability = unit.durability; // 내구도
 			buildings[i].ai = unit.ai;// ai 인지
+			buildings[i].symbol = unit.symbol; // 표시
 			return;
 		}
 	}
@@ -512,7 +513,7 @@ char Sand[5][100] = { "나는야~ 샌드윔", "천천히 움직일게" ,"하지만 일반 유닛을 �
 char random_space[1][100] = { "샌드윔이 스파이스를 생성했습니다." };
 char eat_H[1][100] = { "[샌드윔]이 [하베스터]를 먹었습니다." };
 
-char sistem[5][100] = { " "," ", " ", " "," " };
+char sistem[7][100] = { " "," ", " ", " "," "," "," "};
 
 char Space[5][100] = { "나는야~ 스파이스", "" ,"기본은 2개", "샌드윔이 만들어"," " };
 char eat_space[1][100] = { "[스파이스]를 먹었습니다."};
@@ -529,7 +530,7 @@ char Tank[5][100] = { "나는 중전차(T:hevy Tank)", "생산비용: 12, 인구수 : 5" ,"�
 
 //======= 공격 당했을때 ==========
 char attack_buildings[1][100] = { "하코넨의 건물을 파괴했습니다." };
-
+char attack_unit[1][100] = { "하코넨의 유닛을 파괴했습니다." };
 
 void space_store(int num) { // 각 매장량 표시
 	char buff[100];
@@ -788,7 +789,7 @@ OBJECT_SAMPLE* M_push(CURSOR cursor) {
 		Build_s_select = 0;
 		return &s_units[s_num];
 	}
-	else if (Build_f_select = 1) {
+	else if (Build_f_select == 1) {
 		if (map[0][curr.row][curr.column] == map[0][curr.row][curr.column - 1]
 			&& map[0][curr.row][curr.column] == map[0][curr.row + 1][curr.column]
 			) {
@@ -991,7 +992,7 @@ void object_info_mark(CURSOR cursor, RESOURCE* resource) {
 		case 'R':state_letter(Rock); break;
 		case 'W':state_letter(Sand); break;
 		case 'H':
-			for (int i = 0; i < 10; i++) {
+			for (int i = 0; i < 20; i++) {
 				if (H_units[i].pos.row == curr.row
 					&& H_units[i].pos.column == curr.column) {
 					H_num = i;
@@ -1023,7 +1024,7 @@ void object_info_mark(CURSOR cursor, RESOURCE* resource) {
 		case 'A':state_letter(Arena); break;//투기장
 		case 'T':state_letter(Tank); break;//중전차
 		case 'f': // 프레멘, 투사
-			for (int i = 0; i < 10; i++) {
+			for (int i = 0; i < 20; i++) {
 				if (Fremen_units[i].pos.row == curr.row
 					&& Fremen_units[i].pos.column == curr.column) {
 					f_num = i;
@@ -1039,7 +1040,7 @@ void object_info_mark(CURSOR cursor, RESOURCE* resource) {
 			}
 		 break;
 		case 's':
-			for (int i = 0; i < 10; i++) {
+			for (int i = 0; i < 20; i++) {
 				if (s_units[i].pos.row == curr.row
 					&& s_units[i].pos.column == curr.column) {
 					s_num = i;

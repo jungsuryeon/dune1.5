@@ -140,6 +140,7 @@ typedef struct {
 	POSITION pos; // 현재 위치(좌상단)
 	int durability; // 내구도
 	int ai;
+	char symbol;
 }BUILD_s;
 
 typedef struct {
