@@ -148,8 +148,8 @@ UNIT Soldier = { //보병
 	.symbol = 's',// 화면 표시
 	.spice_cost = 1, // 생산비용
 	.population = 1, // 현재 인구 수 증가
-	.move_period = 10, // 이동주기
-	.aggressive_strength = 40, // 공격력
+	.move_period = 1000, // 이동주기
+	.aggressive_strength = 5, // 공격력
 	.attack_time = 800,// 공격주기
 	.view = 1// 시야
 };
@@ -1000,7 +1000,7 @@ void object_info_mark(CURSOR cursor, RESOURCE* resource) {
 					Build_H_select = 1;
 					break;
 				}
-				else {
+				else if(H_ai_units[i].pos.row == curr.row && H_ai_units[i].pos.column == curr.column) {
 					state_letter(AI_harvester);
 					break;
 				}
@@ -1189,7 +1189,7 @@ int calculate_distance(POSITION pos1, POSITION pos2) {
 	return abs(pos1.row - pos2.row) + abs(pos1.column - pos2.column);
 }
 
-// 맵에서 모든 유닛,스파이스 위치를 찾는 함수
+// 맵에서 모든 유닛
 int find_H_positions(POSITION H_positions[]) {
 	int count = 0;
 	for (int i = 0; i < MAP_HEIGHT; i++) {

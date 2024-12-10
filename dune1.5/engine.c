@@ -213,21 +213,16 @@ int main(void) {
 			}
 		}
 
-		for (int i = 0; i < 20; i++) {
-			if (H_ai_units[i].exist != 0) {
-				H_obj_move(&H_ai_units[i]);
-			}
-		}
 		if (sys_clock != 0) {
-			if (sys_clock == 15000&& AI_resource.spice > 3 && a == 0) {
+			if (sys_clock % 15000==0&& AI_resource.spice > 3 && a == 0) {//ai 투기장
 				AI_Building(&AI_resource, &A);
 				a = 1;
 			}
-			if (sys_clock == 40000&& AI_resource.spice > 5 && f == 0) {
+			if (sys_clock % 40000 ==0&& AI_resource.spice > 5 && f == 0) {
 				AI_Building(&AI_resource, &F);
 				f = 1;
 			}
-			if (sys_clock % 15000 == 0 && AI_resource.spice > 1) {// 장판 생성 10초 마다
+			if (sys_clock % 10000 == 0 && AI_resource.spice > 1) {// ai 장판 생성 15초 마다
 				AI_Building(&AI_resource, &P_ai);
 			}
 			if ( AI_resource.spice >=20 ) {
@@ -249,6 +244,12 @@ int main(void) {
 		}
 
 		sandworm_move();
+
+		for (int i = 0; i < 20; i++) { //ai H 움직임
+			if (H_ai_units[i].exist != 0) {
+				H_obj_move(&H_ai_units[i]);
+			}
+		}
 
 		for (int i = 0; i < num1; i++) { //이동
 			if (H_ptr[i] != NULL && (*H_ptr[i]).M_push == 1) {
@@ -496,7 +497,7 @@ void sample_obj_move(OBJECT_SAMPLE* name) {
 				random_space_letter(2, &resource); resource.population_max -= Harvest.population; reset((*name).dest); break;
 			}
 			else {
-				AI_resource.population -= Harvest.population; // ai 인구수 감소
+				reset((*name).dest);  AI_resource.population -= Harvest.population; break; // ai 인구수 감소
 			}
 		}
 	}
