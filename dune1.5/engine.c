@@ -37,18 +37,18 @@ char map[N_LAYER][MAP_HEIGHT][MAP_WIDTH] = { 0 };
 RESOURCE resource = {
 	.spice = 10,
 	.spice_max = 30,
-	.population = 10, 
+	.population = 10,
 	.population_max = 30
 };
 
-RESOURCE AI_resource = { // í•˜ì½”ë„¨ ìì› êµ¬ì¡°ì²´
+RESOURCE AI_resource = { // ÇÏÄÚ³Ù ÀÚ¿ø ±¸Á¶Ã¼
 	.spice = 10,
 	.spice_max = 30,
 	.population = 10,
 	.population_max = 30
 };
 
-// 3)ì‚¬ë§‰ ë…ìˆ˜ë¦¬: ëª©ì ì—†ì´ ë‚ ì•„ë‹¤ë‹ˆëŠ” ì¤‘ë¦½ìœ ë‹›
+// 3)»ç¸· µ¶¼ö¸®: ¸ñÀû¾øÀÌ ³¯¾Æ´Ù´Ï´Â Áß¸³À¯´Ö
 OBJECT_SAMPLE obj = {
 	.pos = {1, 1},
 	.dest = {MAP_HEIGHT - 2, MAP_WIDTH - 2},
@@ -57,7 +57,7 @@ OBJECT_SAMPLE obj = {
 	.next_move_time = 0
 };
 
-//3) ë³¸ì§„ í•˜ë² ìŠ¤í„°ë¡œ ê°€ëŠ” ìƒŒë“œìœ”
+//3) º»Áø ÇÏº£½ºÅÍ·Î °¡´Â »÷µåÀ«
 OBJECT_SAMPLE sandworm1 = {
 	.pos = {2, MAP_WIDTH / 5},
 	.dest = {MAP_HEIGHT - 2, MAP_WIDTH - 2},
@@ -66,7 +66,7 @@ OBJECT_SAMPLE sandworm1 = {
 	.next_move_time = 2500
 };
 
-//3) í•˜ì½”ë„¨ í•˜ë² ìŠ¤í„°ë¡œ ê°€ëŠ” ìƒŒë“œìœ”
+//3) ÇÏÄÚ³Ù ÇÏº£½ºÅÍ·Î °¡´Â »÷µåÀ«
 OBJECT_SAMPLE sandworm2 = {
 	.pos = {MAP_HEIGHT - 8, 45},
 	.dest = {MAP_HEIGHT - 2, MAP_WIDTH - 2},
@@ -75,48 +75,48 @@ OBJECT_SAMPLE sandworm2 = {
 	.next_move_time = 2500
 };
 
-BUILD P_ai = { //ai ì¥íŒ
-	.symbol = 'P', // í™”ë©´ í‘œì‹œ
-	.spice_cost = 1, // ê±´ì„¤ë¹„ìš©
-	.population_increase = 0, // ì¸êµ¬ ìµœëŒ€ì¹˜ ì¦ê°€
-	.spice_increase = 0,//ìŠ¤íŒŒì´ìŠ¤ ë³´ê´€ ìµœëŒ€ì¹˜ ì¦ê°€
+BUILD P_ai = { //ai ÀåÆÇ
+	.symbol = 'P', // È­¸é Ç¥½Ã
+	.spice_cost = 1, // °Ç¼³ºñ¿ë
+	.population_increase = 0, // ÀÎ±¸ ÃÖ´ëÄ¡ Áõ°¡
+	.spice_increase = 0,//½ºÆÄÀÌ½º º¸°ü ÃÖ´ëÄ¡ Áõ°¡
 	.durability = 0,
 	.ai = 1
 };
 
-BUILD D_ai = { //ai ì¥íŒ
-	.symbol = 'D', // í™”ë©´ í‘œì‹œ
-	.spice_cost = 2, // ê±´ì„¤ë¹„ìš©
-	.population_increase = 10, // ì¸êµ¬ ìµœëŒ€ì¹˜ ì¦ê°€
-	.spice_increase = 0,//ìŠ¤íŒŒì´ìŠ¤ ë³´ê´€ ìµœëŒ€ì¹˜ ì¦ê°€
+BUILD D_ai = { //ai ÀåÆÇ
+	.symbol = 'D', // È­¸é Ç¥½Ã
+	.spice_cost = 2, // °Ç¼³ºñ¿ë
+	.population_increase = 10, // ÀÎ±¸ ÃÖ´ëÄ¡ Áõ°¡
+	.spice_increase = 0,//½ºÆÄÀÌ½º º¸°ü ÃÖ´ëÄ¡ Áõ°¡
 	.durability = 10,
 	.ai = 1
 };
 
-BUILD G_ai = { //ai ì¥íŒ
-	.symbol = 'G', // í™”ë©´ í‘œì‹œ
-	.spice_cost = 4, // ê±´ì„¤ë¹„ìš©
-	.population_increase = 0, // ì¸êµ¬ ìµœëŒ€ì¹˜ ì¦ê°€
-	.spice_increase = 10,//ìŠ¤íŒŒì´ìŠ¤ ë³´ê´€ ìµœëŒ€ì¹˜ ì¦ê°€
+BUILD G_ai = { //ai ÀåÆÇ
+	.symbol = 'G', // È­¸é Ç¥½Ã
+	.spice_cost = 4, // °Ç¼³ºñ¿ë
+	.population_increase = 0, // ÀÎ±¸ ÃÖ´ëÄ¡ Áõ°¡
+	.spice_increase = 10,//½ºÆÄÀÌ½º º¸°ü ÃÖ´ëÄ¡ Áõ°¡
 	.durability = 10,
 	.ai = 1
 };
 
-// í•˜ì½”ë„¨
-BUILD A = { // íˆ¬ê¸°ì¥
-	.symbol = 'A', // í™”ë©´ í‘œì‹œ
-	.spice_cost = 3, // ê±´ì„¤ë¹„ìš©
-	.population_increase = 0, // ì¸êµ¬ ìµœëŒ€ì¹˜ ì¦ê°€
-	.spice_increase = 0,//ìŠ¤íŒŒì´ìŠ¤ ë³´ê´€ ìµœëŒ€ì¹˜ ì¦ê°€
+// ÇÏÄÚ³Ù
+BUILD A = { // Åõ±âÀå
+	.symbol = 'A', // È­¸é Ç¥½Ã
+	.spice_cost = 3, // °Ç¼³ºñ¿ë
+	.population_increase = 0, // ÀÎ±¸ ÃÖ´ëÄ¡ Áõ°¡
+	.spice_increase = 0,//½ºÆÄÀÌ½º º¸°ü ÃÖ´ëÄ¡ Áõ°¡
 	.durability = 15,
 	.ai = 1//ai
 };
 
 BUILD F = {
-	.symbol = 'F', // í™”ë©´ í‘œì‹œ
-	.spice_cost = 5, // ê±´ì„¤ë¹„ìš©
-	.population_increase = 0, // ì¸êµ¬ ìµœëŒ€ì¹˜ ì¦ê°€
-	.spice_increase = 0,//ìŠ¤íŒŒì´ìŠ¤ ë³´ê´€ ìµœëŒ€ì¹˜ ì¦ê°€
+	.symbol = 'F', // È­¸é Ç¥½Ã
+	.spice_cost = 5, // °Ç¼³ºñ¿ë
+	.population_increase = 0, // ÀÎ±¸ ÃÖ´ëÄ¡ Áõ°¡
+	.spice_increase = 0,//½ºÆÄÀÌ½º º¸°ü ÃÖ´ëÄ¡ Áõ°¡
 	.durability = 30,
 	.ai = 1//ai
 };
@@ -124,56 +124,56 @@ BUILD F = {
 bool is_double_click = false;
 int sandworm_next_move_time = 1000;
 OBJECT_SAMPLE* H_ptr[40] = { 0 };
-OBJECT_SAMPLE* P_ptr[40] = { 0 }; 
+OBJECT_SAMPLE* P_ptr[40] = { 0 };
 OBJECT_SAMPLE H_ai_units[20] = { 0 };
 extern UNIT Harvest;
 
 
 int num1 = 0;
 int num2 = 0;
-int a = 0; int f =0; 
+int a = 0; int f = 0;
 /* ================= main() =================== */
 int main(void) {
 	srand((unsigned int)time(NULL));
 	init();
-	//intro();
+	intro();
 	Initial_State();
 	display_system_message();
 	display_object_info();
 	display_commands();
 	display(resource, map, cursor);
-	initial_H(); // ì´ˆê¸° H ìœ„ì¹˜ ì €ì¥
-	initial_ai_H();// ai ì´ˆê¸° H ìœ„ì¹˜ ì €ì¥
+	initial_H(); // ÃÊ±â H À§Ä¡ ÀúÀå
+	initial_ai_H();// ai ÃÊ±â H À§Ä¡ ÀúÀå
 	initial_p();
 	int H_move = 0;
 	KEY last_key = 0;
-	int ai_H_num = 0; // Hê°€ ëª‡ê°œ ìˆëŠ”ì§€
+	int ai_H_num = 0; // H°¡ ¸î°³ ÀÖ´ÂÁö
 	ai_H_move(0);
-	int last_harvester_time = 0; //ai H ìƒì„± ì‹œê°„
-	//2) ì»¤ì„œ & ìƒíƒœì°½
+	int last_harvester_time = 0; //ai H »ı¼º ½Ã°£
+	//2) Ä¿¼­ & »óÅÂÃ¢
 	while (1) {
-		// loop ëŒ ë•Œë§ˆë‹¤(ì¦‰, TICK==10msë§ˆë‹¤) í‚¤ ì…ë ¥ í™•ì¸
+		// loop µ¹ ¶§¸¶´Ù(Áï, TICK==10ms¸¶´Ù) Å° ÀÔ·Â È®ÀÎ
 		KEY key = get_key();
 		clock_t current_time = clock();
-		// í‚¤ ì…ë ¥ì´ ìˆìœ¼ë©´ ì²˜ë¦¬
+		// Å° ÀÔ·ÂÀÌ ÀÖÀ¸¸é Ã³¸®
 		if (is_arrow_key(key)) {
 			double time_diff = (double)(current_time - last_key_time) / CLOCKS_PER_SEC;
 			if (key == last_key && time_diff < 0.3 && !is_double_click) {
-				// ë‘ ë²ˆì§¸ í´ë¦­ì´ ë¹ ë¥´ê²Œ ì´ë£¨ì–´ì§„ ê²½ìš° // ë‘ ë²ˆ í´ë¦­ ì¤‘ë³µ ë°©ì§€
+				// µÎ ¹øÂ° Å¬¸¯ÀÌ ºü¸£°Ô ÀÌ·ç¾îÁø °æ¿ì // µÎ ¹ø Å¬¸¯ Áßº¹ ¹æÁö
 				is_double_click = true;
-				cursor_move(ktod(key), 5); // 5ì¹¸ ì´ë™
+				cursor_move(ktod(key), 5); // 5Ä­ ÀÌµ¿
 			}
 			else {
-				// ì²« ë²ˆì§¸ í´ë¦­ì´ê±°ë‚˜ ëŠë¦¬ê²Œ ëˆŒë¦° ê²½ìš°
+				// Ã¹ ¹øÂ° Å¬¸¯ÀÌ°Å³ª ´À¸®°Ô ´­¸° °æ¿ì
 				is_double_click = false;
-				cursor_move(ktod(key), 1); // 1ì¹¸ ì´ë™
+				cursor_move(ktod(key), 1); // 1Ä­ ÀÌµ¿
 
 			}
 			last_key = key;
 			last_key_time = current_time;
 		}
 		else {
-			// ë°©í–¥í‚¤ ì™¸ì˜ ì…ë ¥
+			// ¹æÇâÅ° ¿ÜÀÇ ÀÔ·Â
 			switch (key) {
 			case k_quit: outro();
 			case k_space:object_info_mark(cursor, &resource);  break;
@@ -194,18 +194,18 @@ int main(void) {
 		}
 
 		POSITION space_positions[50] = { 0 };
-		int space_cnt = find_space_positions(space_positions); 
+		int space_cnt = find_space_positions(space_positions);
 		POSITION h_move = { 3,MAP_WIDTH - 3 };
-		if (space_cnt % 4 == 0 && AI_resource.spice - Harvest.spice_cost >= 0&& (sys_clock - last_harvester_time)>= 5000) { // ìŠ¤íŒŒì´ìŠ¤ê°€ 4ì˜ ë°°ìˆ˜ ì¼ë•Œ í•˜ë² ìŠ¤í„° ìƒì„±
-			int H_it = 0; 
+		if (space_cnt % 4 == 0 && AI_resource.spice - Harvest.spice_cost >= 0 && (sys_clock - last_harvester_time) >= 5000) { // ½ºÆÄÀÌ½º°¡ 4ÀÇ ¹è¼ö ÀÏ¶§ ÇÏº£½ºÅÍ »ı¼º
+			int H_it = 0;
 			if (map[1][3][MAP_WIDTH - 2] == 'H' && map[1][3][MAP_WIDTH - 3] == 'H') {
 				H_it = 1;
 			}
 			else if (map[1][3][MAP_WIDTH - 2] == 'H' && map[1][3][MAP_WIDTH - 3] != ' ') {
-				POSITION h_move = { 3,MAP_WIDTH -  2};
+				POSITION h_move = { 3,MAP_WIDTH - 2 };
 			}
 			if (H_it == 0) {
-				int H_num= push_units(H_ai_units, h_move , 70, Harvest);
+				int H_num = push_units(H_ai_units, h_move, 70, Harvest);
 				map[1][h_move.row][h_move.column] = Harvest.symbol;
 				AI_resource.spice -= Harvest.spice_cost;
 				AI_resource.population += Harvest.population;
@@ -214,18 +214,18 @@ int main(void) {
 		}
 
 		if (sys_clock != 0) {
-			if (sys_clock % 15000==0&& AI_resource.spice > 3 && a == 0) {//ai íˆ¬ê¸°ì¥
+			if (sys_clock % 15000 == 0 && AI_resource.spice > 3 && a == 0) {//ai Åõ±âÀå
 				AI_Building(&AI_resource, &A);
 				a = 1;
 			}
-			if (sys_clock % 40000 ==0&& AI_resource.spice > 5 && f == 0) {
+			if (sys_clock % 40000 == 0 && AI_resource.spice > 5 && f == 0) {
 				AI_Building(&AI_resource, &F);
 				f = 1;
 			}
-			if (sys_clock % 10000 == 0 && AI_resource.spice > 1) {// ai ì¥íŒ ìƒì„± 15ì´ˆ ë§ˆë‹¤
+			if (sys_clock % 15000 == 0 && AI_resource.spice > 1) {// ai ÀåÆÇ »ı¼º 15ÃÊ ¸¶´Ù
 				AI_Building(&AI_resource, &P_ai);
 			}
-			if ( AI_resource.spice >=20 ) {
+			if (AI_resource.spice >= 20) {
 				for (int i = 0; i < 10; i++) {
 					if (P_buildings[i].exist == 1) {
 						AI_Building(&AI_resource, &G_ai);
@@ -233,7 +233,7 @@ int main(void) {
 					}
 				}
 			}
-			if (AI_resource.population>=20) {
+			if (AI_resource.population >= 20) {
 				for (int i = 0; i < 10; i++) {
 					if (P_buildings[i].exist == 1) {
 						AI_Building(&AI_resource, &D_ai);
@@ -245,27 +245,27 @@ int main(void) {
 
 		sandworm_move();
 
-		for (int i = 0; i < 20; i++) { //ai H ì›€ì§ì„
+		for (int i = 0; i < 20; i++) { //ai H ¿òÁ÷ÀÓ
 			if (H_ai_units[i].exist != 0) {
 				H_obj_move(&H_ai_units[i]);
 			}
 		}
 
-		for (int i = 0; i < num1; i++) { //ì´ë™
+		for (int i = 0; i < num1; i++) { //ÀÌµ¿
 			if (H_ptr[i] != NULL && (*H_ptr[i]).M_push == 1) {
 				H_obj_move(H_ptr[i]);
 			}
 		}
-		for (int i = 0; i < num2; i++) { // ìˆœì°°
+		for (int i = 0; i < num2; i++) { // ¼øÂû
 			if (P_ptr[i] != NULL && (*P_ptr[i]).P_push == 1) {
 				P_obj_move(P_ptr[i]);
 			}
 		}
 
-		// ìƒ˜í”Œ ì˜¤ë¸Œì íŠ¸ ë™ì‘
+		// »ùÇÃ ¿ÀºêÁ§Æ® µ¿ÀÛ
 		sample_obj_move(&obj);
 
-		// í™”ë©´ ì¶œë ¥
+		// È­¸é Ãâ·Â
 		display(resource, map, cursor);
 		Sleep(TICK);
 		sys_clock += 10;
@@ -289,10 +289,10 @@ void intro(void) {
 	};
 	for (int i = 0; i < sizeof(intro) / sizeof(intro[0]); i++) {
 		printf("%s\n", intro[i]);
-		Sleep(1000);;  // 100ms ë”œë ˆì´
+		Sleep(1000);;  // 100ms µô·¹ÀÌ
 	}
 	Sleep(2000);
-	system("cls");// ì½˜ì†”ì°½ ì§€ìš°ëŠ” ëª…ë ¹ì–´
+	system("cls");// ÄÜ¼ÖÃ¢ Áö¿ì´Â ¸í·É¾î
 }
 
 void outro(void) {
@@ -301,7 +301,7 @@ void outro(void) {
 }
 
 void init(void) {
-	// layer 0(map[0])ì— ì§€í˜• ìƒì„±
+	// layer 0(map[0])¿¡ ÁöÇü »ı¼º
 	for (int j = 0; j < MAP_WIDTH; j++) {
 		map[0][0][j] = '#';
 		map[0][MAP_HEIGHT - 1][j] = '#';
@@ -315,7 +315,7 @@ void init(void) {
 		}
 	}
 
-	// layer 1(map[1])ì€ ë¹„ì›Œ ë‘ê¸°(-1ë¡œ ì±„ì›€)
+	// layer 1(map[1])Àº ºñ¿ö µÎ±â(-1·Î Ã¤¿ò)
 	for (int i = 0; i < MAP_HEIGHT; i++) {
 		for (int j = 0; j < MAP_WIDTH; j++) {
 			map[1][i][j] = -1;
@@ -329,9 +329,9 @@ void init(void) {
 }
 
 
-//1) ì´ˆê¸°ìƒíƒœ í‘œì‹œ
-void Initial_State(void) { // ê¸°ë³¸ ë§µ ì¶œë ¥
-	//ë°‘
+//1) ÃÊ±â»óÅÂ Ç¥½Ã
+void Initial_State(void) { // ±âº» ¸Ê Ãâ·Â
+	//¹Ø
 	map[0][MAP_HEIGHT - 3][1] = SYMBOL_BASE;
 	map[0][MAP_HEIGHT - 3][2] = SYMBOL_BASE;
 	map[0][MAP_HEIGHT - 2][1] = SYMBOL_BASE;
@@ -383,7 +383,7 @@ void Initial_State(void) { // ê¸°ë³¸ ë§µ ì¶œë ¥
 }
 
 
-// (ê°€ëŠ¥í•˜ë‹¤ë©´) ì§€ì •í•œ ë°©í–¥ìœ¼ë¡œ ì»¤ì„œ ì´ë™
+// (°¡´ÉÇÏ´Ù¸é) ÁöÁ¤ÇÑ ¹æÇâÀ¸·Î Ä¿¼­ ÀÌµ¿
 void cursor_move(DIRECTION dir, int distance) {
 	POSITION curr = cursor.current;
 	POSITION new_pos = curr;
@@ -393,15 +393,15 @@ void cursor_move(DIRECTION dir, int distance) {
 
 	for (int i = 0; i < distance; i++) {
 		new_pos = pmove(new_pos, dir);
-		// ê° ë‹¨ê³„ë§ˆë‹¤ ìœ íš¨ì„± ê²€ì‚¬
+		// °¢ ´Ü°è¸¶´Ù À¯È¿¼º °Ë»ç
 		if (!(1 <= new_pos.row && new_pos.row <= MAP_HEIGHT - 2 - size &&
 			1 <= new_pos.column && new_pos.column <= MAP_WIDTH - 2 - size)) {
-			// ë§µ ê²½ê³„ì— ë„ë‹¬í•˜ë©´ ì´ë™ ì¤‘ë‹¨
+			// ¸Ê °æ°è¿¡ µµ´ŞÇÏ¸é ÀÌµ¿ Áß´Ü
 			return;
 		}
 	}
 
-	// ìµœì¢… ìœ„ì¹˜ê°€ ìœ íš¨í•˜ë©´ ì»¤ì„œ ì—…ë°ì´íŠ¸
+	// ÃÖÁ¾ À§Ä¡°¡ À¯È¿ÇÏ¸é Ä¿¼­ ¾÷µ¥ÀÌÆ®
 	if (1 <= new_pos.row && new_pos.row <= MAP_HEIGHT - 2 - size &&
 		1 <= new_pos.column && new_pos.column <= MAP_WIDTH - 2 - size) {
 		cursor.previous = cursor.current;
@@ -409,43 +409,43 @@ void cursor_move(DIRECTION dir, int distance) {
 	}
 }
 
-//3) ì¤‘ë¦½ìœ ë‹›
+//3) Áß¸³À¯´Ö
 /* ================= sample object movement =================== */
-//ìƒŒë“œìœ” ì›€ì§ì´ëŠ” ì½”ë“œ
-POSITION sandworm_pos1 = { 2, MAP_WIDTH / 5 }; // ì´ˆê¸° ìƒŒë“œì›œ ìœ„ì¹˜
-POSITION sandworm_pos2 = { MAP_HEIGHT - 8, 45 }; // ì´ˆê¸° ìƒŒë“œì›œ ìœ„ì¹˜
+//»÷µåÀ« ¿òÁ÷ÀÌ´Â ÄÚµå
+POSITION sandworm_pos1 = { 2, MAP_WIDTH / 5 }; // ÃÊ±â »÷µå¿ú À§Ä¡
+POSITION sandworm_pos2 = { MAP_HEIGHT - 8, 45 }; // ÃÊ±â »÷µå¿ú À§Ä¡
 
 OBJECT_SAMPLE name = {
 	.pos = {0,0}
 };
-//r,wì›€ì§ì´ëŠ” ê²ƒ
+//r,w¿òÁ÷ÀÌ´Â °Í
 POSITION sample_obj_next_position(OBJECT_SAMPLE* name) {
-	// í˜„ì¬ ìœ„ì¹˜ì™€ ëª©ì ì§€ë¥¼ ë¹„êµí•´ì„œ ì´ë™ ë°©í–¥ ê²°ì •	
+	// ÇöÀç À§Ä¡¿Í ¸ñÀûÁö¸¦ ºñ±³ÇØ¼­ ÀÌµ¿ ¹æÇâ °áÁ¤	
 	POSITION diff = psub((*name).dest, (*name).pos);
 	DIRECTION dir;
-	// ëª©ì ì§€ ë„ì°©
+	// ¸ñÀûÁö µµÂø
 	if (diff.row == 0 && diff.column == 0) {
 		if ((*name).dest.row == 1 && (*name).dest.column == 1) {
 			POSITION new_dest = { MAP_HEIGHT - 2, MAP_WIDTH - 2 };
 			(*name).dest = new_dest;
-			// topleft --> bottomrightë¡œ ëª©ì ì§€ ì„¤ì •
+			// topleft --> bottomright·Î ¸ñÀûÁö ¼³Á¤
 			new_dest = (*name).dest;
 		}
 		else {
-			// bottomright --> topleftë¡œ ëª©ì ì§€ ì„¤ì •
+			// bottomright --> topleft·Î ¸ñÀûÁö ¼³Á¤
 			POSITION new_dest = { 1, 1 };
 			(*name).dest = new_dest;
 		}
 	}
 
-	// ê°€ë¡œì¶•, ì„¸ë¡œì¶• ê±°ë¦¬ë¥¼ ë¹„êµí•´ì„œ ë” ë¨¼ ìª½ ì¶•ìœ¼ë¡œ ì´ë™
+	// °¡·ÎÃà, ¼¼·ÎÃà °Å¸®¸¦ ºñ±³ÇØ¼­ ´õ ¸Õ ÂÊ ÃàÀ¸·Î ÀÌµ¿
 	if (abs(diff.row) >= abs(diff.column)) {
 		dir = (diff.row >= 0) ? d_down : d_up;
 	}
 	else {
 		dir = (diff.column >= 0) ? d_right : d_left;
 	}
-	if ((*name).repr == 'W') { //ìŠ¤íŒŒì´ìŠ¤ ëœë¤ ìƒì„±
+	if ((*name).repr == 'W') { //½ºÆÄÀÌ½º ·£´ı »ı¼º
 		int cycle = rand() % 9;
 		if (cycle < 1) {
 			int spice_amount = rand() % 9 + 1;
@@ -454,14 +454,14 @@ POSITION sample_obj_next_position(OBJECT_SAMPLE* name) {
 		}
 	}
 	// validation check
-	// next_posê°€ ë§µì„ ë²—ì–´ë‚˜ì§€ ì•Šê³ , (ì§€ê¸ˆì€ ì—†ì§€ë§Œ)ì¥ì• ë¬¼ì— ë¶€ë”ªíˆì§€ ì•Šìœ¼ë©´ ë‹¤ìŒ ìœ„ì¹˜ë¡œ ì´ë™
-	// ì§€ê¸ˆì€ ì¶©ëŒ ì‹œ ì•„ë¬´ê²ƒë„ ì•ˆ í•˜ëŠ”ë°, ë‚˜ì¤‘ì—ëŠ” ì¥ì• ë¬¼ì„ í”¼í•´ê°€ê±°ë‚˜ ì ê³¼ ì „íˆ¬ë¥¼ í•˜ê±°ë‚˜... ë“±ë“±
+	// next_pos°¡ ¸ÊÀ» ¹ş¾î³ªÁö ¾Ê°í, (Áö±İÀº ¾øÁö¸¸)Àå¾Ö¹°¿¡ ºÎµúÈ÷Áö ¾ÊÀ¸¸é ´ÙÀ½ À§Ä¡·Î ÀÌµ¿
+	// Áö±İÀº Ãæµ¹ ½Ã ¾Æ¹«°Íµµ ¾È ÇÏ´Âµ¥, ³ªÁß¿¡´Â Àå¾Ö¹°À» ÇÇÇØ°¡°Å³ª Àû°ú ÀüÅõ¸¦ ÇÏ°Å³ª... µîµî
 	POSITION next_pos = pmove((*name).pos, dir);
 	int next_rock = 0;
 	if (1 <= next_pos.row && next_pos.row <= MAP_HEIGHT - 2 && \
 		1 <= next_pos.column && next_pos.column <= MAP_WIDTH - 2) {
-		if (map[0][next_pos.row][next_pos.column] == 'R' 
-			|| map[1][next_pos.row][next_pos.column] == 'W') { //ëŒì´ ì•ì— ìˆì„ê²½ìš° í”¼í•´ê°
+		if (map[0][next_pos.row][next_pos.column] == 'R'
+			|| map[1][next_pos.row][next_pos.column] == 'W') { //µ¹ÀÌ ¾Õ¿¡ ÀÖÀ»°æ¿ì ÇÇÇØ°¨
 			if (dir == d_down || dir == d_up) {
 				dir = (diff.column >= 0) ? d_right : d_left;
 			}
@@ -474,20 +474,20 @@ POSITION sample_obj_next_position(OBJECT_SAMPLE* name) {
 		return next_pos;
 	}
 	else {
-		return (*name).pos;  // ì œìë¦¬
+		return (*name).pos;  // Á¦ÀÚ¸®
 	}
 }
 
-//r,wì›€ì§ì´ëŠ” ê²ƒ
-void sample_obj_move(OBJECT_SAMPLE* name) { 
+//r,w¿òÁ÷ÀÌ´Â °Í
+void sample_obj_move(OBJECT_SAMPLE* name) {
 	if (sys_clock <= (*name).next_move_time) {
-		// ì•„ì§ ì‹œê°„ì´ ì•ˆ ëìŒ
+		// ¾ÆÁ÷ ½Ã°£ÀÌ ¾È µÆÀ½
 		return;
 	}
 	int layer;
 	if ((*name).repr == 'r') layer = 2;
 	else layer = 1;
-	// ì˜¤ë¸Œì íŠ¸(ê±´ë¬¼, ìœ ë‹› ë“±)ì€ layer1(map[1])ì— ì €ì¥
+	// ¿ÀºêÁ§Æ®(°Ç¹°, À¯´Ö µî)Àº layer1(map[1])¿¡ ÀúÀå
 	map[layer][(*name).pos.row][(*name).pos.column] = -1;
 	(*name).pos = sample_obj_next_position(name);
 	if (map[1][(*name).pos.row][(*name).pos.column] == 'H') {
@@ -497,7 +497,7 @@ void sample_obj_move(OBJECT_SAMPLE* name) {
 				random_space_letter(2, &resource); resource.population_max -= Harvest.population; reset((*name).dest); break;
 			}
 			else {
-				reset((*name).dest);  AI_resource.population -= Harvest.population; break; // ai ì¸êµ¬ìˆ˜ ê°ì†Œ
+				reset((*name).dest);  AI_resource.population -= Harvest.population; break; // ai ÀÎ±¸¼ö °¨¼Ò
 			}
 		}
 	}
@@ -505,7 +505,7 @@ void sample_obj_move(OBJECT_SAMPLE* name) {
 	{
 	case 's': random_space_letter(4, &resource); reset((*name).dest); break;
 	case 'f': division((*name).pos, &resource); reset((*name).dest); break;
-	case 'T': reset((*name).dest); break; // ì¤‘ì „ì°¨
+	case 'T': reset((*name).dest); break; // ÁßÀüÂ÷
 	default:
 		break;
 	}
@@ -539,16 +539,16 @@ char over_pay(OBJECT_SAMPLE* name, char ch) {
 }
 
 
-//í•˜ë² ìŠ¤í„° ì›€ì§ì´ëŠ” ê²ƒ
+//ÇÏº£½ºÅÍ ¿òÁ÷ÀÌ´Â °Í
 POSITION H_obj_next_position(OBJECT_SAMPLE* name) {
-	// í˜„ì¬ ìœ„ì¹˜ì™€ ëª©ì ì§€ë¥¼ ë¹„êµí•´ì„œ ì´ë™ ë°©í–¥ ê²°ì •	
+	// ÇöÀç À§Ä¡¿Í ¸ñÀûÁö¸¦ ºñ±³ÇØ¼­ ÀÌµ¿ ¹æÇâ °áÁ¤	
 	POSITION diff = psub((*name).dest, (*name).pos);
 	DIRECTION dir;
-	// ëª©ì ì§€ ë„ì°©
+	// ¸ñÀûÁö µµÂø
 	if (diff.row == 0 && diff.column == 0) {
-		// ëª©ì ì§€ì— ë„ì°©í•œ ê²½ìš°
+		// ¸ñÀûÁö¿¡ µµÂøÇÑ °æ¿ì
 		if ((*name).repr == 'H') {
-			// í•˜ë² ìŠ¤í„° íŠ¹ìˆ˜ ë¡œì§
+			// ÇÏº£½ºÅÍ Æ¯¼ö ·ÎÁ÷
 			if ((*name).M_push == 1 && (*name).dest.row == MAP_HEIGHT - 4 && ((*name).dest.column == 1 || (*name).dest.column == 2)) {
 				POSITION new_dest = space_find((*name).dest, (*name).M_push);
 				(*name).dest = new_dest;
@@ -562,7 +562,7 @@ POSITION H_obj_next_position(OBJECT_SAMPLE* name) {
 				(*name).dest = new_dest;
 			}
 		}
-		return (*name).pos; // ëª©ì ì§€ì— ë„ì°©í–ˆìœ¼ë¯€ë¡œ í˜„ì¬ ìœ„ì¹˜ ë°˜í™˜
+		return (*name).pos; // ¸ñÀûÁö¿¡ µµÂøÇßÀ¸¹Ç·Î ÇöÀç À§Ä¡ ¹İÈ¯
 	}
 
 	if (abs(diff.row) >= abs(diff.column)) {
@@ -609,11 +609,11 @@ POSITION H_obj_next_position(OBJECT_SAMPLE* name) {
 			}
 		}
 		else {
-			if (map[0][(*name).dest.row][(*name).dest.column] != ' '&&abs((*name).pos.row - (*name).dest.row) + abs((*name).pos.column - (*name).dest.column) == 1) {
+			if (map[0][(*name).dest.row][(*name).dest.column] != ' ' && abs((*name).pos.row - (*name).dest.row) + abs((*name).pos.column - (*name).dest.column) == 1) {
 				if (map[0][next_pos.row][next_pos.column] == map[0][(*name).dest.row][(*name).dest.column] &&
 					next_pos.row == (*name).dest.row && next_pos.column == (*name).dest.column) {
 					if (sys_clock % (*name).attack_time == 0 && one_acttck == 0) {
-						// map ì¢Œí‘œ ì°¸ì¡° ì˜¤ë¥˜ ìˆ˜ì •
+						// map ÁÂÇ¥ ÂüÁ¶ ¿À·ù ¼öÁ¤
 						switch (map[0][(*name).dest.row][(*name).dest.column])
 						{
 						case 'P': enemy_bild(name, P_buildings); break;
@@ -630,21 +630,21 @@ POSITION H_obj_next_position(OBJECT_SAMPLE* name) {
 				}
 			}
 			else if (map[1][next_pos.row][next_pos.column] == 'W'
-				||map[0][next_pos.row][next_pos.column] == 'B'
+				|| map[0][next_pos.row][next_pos.column] == 'B'
 				|| map[0][next_pos.row][next_pos.column] == 'P'
 				|| map[0][next_pos.row][next_pos.column] == 'D'
 				|| map[0][next_pos.row][next_pos.column] == 'G'
 				|| map[0][next_pos.row][next_pos.column] == 'A'
 				|| map[0][next_pos.row][next_pos.column] == 'F') {
-					if (dir == d_down || dir == d_up) {
-						dir = (diff.column >= 0) ? d_right : d_left;
-					}
-					else {
-						dir = (diff.row >= 0) ? d_down : d_up;
-					}
-					next_pos = pmove((*name).pos, dir);
+				if (dir == d_down || dir == d_up) {
+					dir = (diff.column >= 0) ? d_right : d_left;
+				}
+				else {
+					dir = (diff.row >= 0) ? d_down : d_up;
+				}
+				next_pos = pmove((*name).pos, dir);
 			}
-			else if((*name).M_push == 1 && map[1][next_pos.row][next_pos.column] != -1) {
+			else if ((*name).M_push == 1 && map[1][next_pos.row][next_pos.column] != -1) {
 				switch (map[1][next_pos.row][next_pos.column]) {
 				case 'H':
 					attack_pos = side_unit_attack(H_ai_units, next_pos, name);
@@ -675,23 +675,23 @@ POSITION H_obj_next_position(OBJECT_SAMPLE* name) {
 		return next_pos;
 	}
 	else {
-		return (*name).pos;  // ì œìë¦¬
+		return (*name).pos;  // Á¦ÀÚ¸®
 	}
 }
 
-//í•˜ë² ìŠ¤í„° ì›€ì§ì´ëŠ” ê²ƒ
+//ÇÏº£½ºÅÍ ¿òÁ÷ÀÌ´Â °Í
 void H_obj_move(OBJECT_SAMPLE* name) {
 	int one_acttck = 0;
 	if (sys_clock <= (*name).next_move_time) {
-		// ì•„ì§ ì‹œê°„ì´ ì•ˆ ëìŒ
+		// ¾ÆÁ÷ ½Ã°£ÀÌ ¾È µÆÀ½
 		return;
 	}
-	// ì˜¤ë¸Œì íŠ¸(ê±´ë¬¼, ìœ ë‹› ë“±)ì€ layer1(map[1])ì— ì €ì¥
+	// ¿ÀºêÁ§Æ®(°Ç¹°, À¯´Ö µî)Àº layer1(map[1])¿¡ ÀúÀå
 	map[1][(*name).pos.row][(*name).pos.column] = -1;
 	(*name).pos = H_obj_next_position(name);
 	if ((*name).repr == 'H') {
 		if (map[0][(*name).pos.row][(*name).pos.column] >= '1' &&
-			map[0][(*name).pos.row][(*name).pos.column] <= '9') { // ìŠ¤íŒŒì´ìŠ¤ë¥¼ ë¨¹ëŠ”ê²ƒ
+			map[0][(*name).pos.row][(*name).pos.column] <= '9') { // ½ºÆÄÀÌ½º¸¦ ¸Ô´Â°Í
 			char result = over_pay(name, map[0][(*name).pos.row][(*name).pos.column]);
 			if (result == '0') {
 				map[0][(*name).pos.row][(*name).pos.column] = ' ';
@@ -710,7 +710,7 @@ void H_obj_move(OBJECT_SAMPLE* name) {
 			}
 		}
 		else if ((*name).pos.row == MAP_HEIGHT - 4 && ((*name).pos.column == 1 || (*name).pos.column == 2)) {
-			if (resource.spice_max - ((*name).space_number + (*name).space_number) >= 0) { // ìŠ¤íŒŒì´ìŠ¤ê°€ ë„˜ìœ¼ë©´ ì•ˆë„£ì–´ì§
+			if (resource.spice_max - ((*name).space_number + (*name).space_number) >= 0) { // ½ºÆÄÀÌ½º°¡ ³ÑÀ¸¸é ¾È³Ö¾îÁü
 				resource.spice += (*name).space_number;
 			}
 			(*name).space_number = 0;
@@ -744,12 +744,12 @@ void H_obj_move(OBJECT_SAMPLE* name) {
 }
 
 
-//Pì„ ëˆŒë €ì„ë•Œ ìœ ë‹› ì›€ì§ì„
+//PÀ» ´­·¶À»¶§ À¯´Ö ¿òÁ÷ÀÓ
 POSITION P_obj_next_position(OBJECT_SAMPLE* name) {
-	// í˜„ì¬ ìœ„ì¹˜ì™€ ëª©ì ì§€ë¥¼ ë¹„êµí•´ì„œ ì´ë™ ë°©í–¥ ê²°ì •	
+	// ÇöÀç À§Ä¡¿Í ¸ñÀûÁö¸¦ ºñ±³ÇØ¼­ ÀÌµ¿ ¹æÇâ °áÁ¤	
 	POSITION diff = psub((*name).dest, (*name).pos);
 	DIRECTION dir;
-	// ëª©ì ì§€ ë„ì°©
+	// ¸ñÀûÁö µµÂø
 	if (diff.row == 0 && diff.column == 0) {
 		if (diff.row == 0 && diff.column == 0) {
 			POSITION temp = (*name).dest;
@@ -768,21 +768,21 @@ POSITION P_obj_next_position(OBJECT_SAMPLE* name) {
 
 	POSITION next_pos = pmove((*name).pos, dir);
 	POSITION attack_pos = { 0 };
-	if (1 <= next_pos.row && next_pos.row <= MAP_HEIGHT - 2 && 
+	if (1 <= next_pos.row && next_pos.row <= MAP_HEIGHT - 2 &&
 		1 <= next_pos.column && next_pos.column <= MAP_WIDTH - 2) {
-		if((*name).P_push==1&& map[1][next_pos.row][next_pos.column]!=-1) {
+		if ((*name).P_push == 1 && map[1][next_pos.row][next_pos.column] != -1) {
 			switch (map[1][next_pos.row][next_pos.column]) {
-			case 'H': 
+			case 'H':
 				attack_pos = side_unit_attack(H_ai_units, next_pos, name);
 				return attack_pos;
 				break;
-			case 'f': 
+			case 'f':
 				attack_pos = side_unit_attack(Fighter_units, next_pos, name);
 				return attack_pos;
-				break; 
-					
-			case 't': 
-				attack_pos = side_unit_attack(T_units, next_pos, name); 
+				break;
+
+			case 't':
+				attack_pos = side_unit_attack(T_units, next_pos, name);
 				return attack_pos;
 				break;
 			default:
@@ -800,16 +800,16 @@ POSITION P_obj_next_position(OBJECT_SAMPLE* name) {
 		return next_pos;
 	}
 	else {
-		return (*name).pos;  // ì œìë¦¬
+		return (*name).pos;  // Á¦ÀÚ¸®
 	}
 }
 
 void P_obj_move(OBJECT_SAMPLE* name) {
 	if (sys_clock <= (*name).next_move_time) {
-		// ì•„ì§ ì‹œê°„ì´ ì•ˆ ëìŒ
+		// ¾ÆÁ÷ ½Ã°£ÀÌ ¾È µÆÀ½
 		return;
 	}
-	//unit_attack(name); // ê·¼ì²˜ì— ìœ ë‹›ì´ ìˆìœ¼ë©´ ëª©í‘œì§€ë¥¼ ë°”ê¿ˆ
+	//unit_attack(name); // ±ÙÃ³¿¡ À¯´ÖÀÌ ÀÖÀ¸¸é ¸ñÇ¥Áö¸¦ ¹Ù²Ş
 	map[1][(*name).pos.row][(*name).pos.column] = -1;
 	(*name).pos = P_obj_next_position(name);
 	map[1][(*name).pos.row][(*name).pos.column] = (*name).repr;
@@ -837,14 +837,14 @@ POSITION side_unit_attack(OBJECT_SAMPLE units[], POSITION next_pos, OBJECT_SAMPL
 			else {
 				return (*name).pos;
 			}
-			
+
 		}
 	}
 	return next_pos;
 }
 
-void enemy_bild(OBJECT_SAMPLE* name, BUILD_s build[]) { 
-	//ìœ„ì¹˜ ì°¾ê¸° ë° í•´ë‹¹ ë‚´êµ¬ë„ê°€ ê¹ì„
+void enemy_bild(OBJECT_SAMPLE* name, BUILD_s build[]) {
+	//À§Ä¡ Ã£±â ¹× ÇØ´ç ³»±¸µµ°¡ ±ğÀÓ
 	int found = 0;
 	int num = 0;
 	for (int i = 0; i < 10 && !found; i++) {
@@ -862,7 +862,7 @@ void enemy_bild(OBJECT_SAMPLE* name, BUILD_s build[]) {
 		}
 	}
 
-	if (build[num].durability <= 0) { //ë‚´êµ¬ë„ê°€ ì—†ìœ¼ë©´ ì—†ì–´ì§
+	if (build[num].durability <= 0) { //³»±¸µµ°¡ ¾øÀ¸¸é ¾ø¾îÁü
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < 2; j++) {
 				POSITION pos = { build[num].pos.row + i, build[num].pos.column + j };
@@ -875,11 +875,11 @@ void enemy_bild(OBJECT_SAMPLE* name, BUILD_s build[]) {
 		else if (build[num].symbol == 'F') {
 			f = 0;
 		}
-		build[num].exist = 0; // ë°°ì—´ì— ë“¤ì–´ê°”ëŠ”ì§€ ì—¬ë¶€
-		build[num].pos.row = 0; // ìœ„ì¹˜
-		build[num].pos.column = 0; // ìœ„ì¹˜
-		build[num].durability = 0; // ë‚´êµ¬ë„
-		build[num].ai = 0;// ai ì¸ì§€
+		build[num].exist = 0; // ¹è¿­¿¡ µé¾î°¬´ÂÁö ¿©ºÎ
+		build[num].pos.row = 0; // À§Ä¡
+		build[num].pos.column = 0; // À§Ä¡
+		build[num].durability = 0; // ³»±¸µµ
+		build[num].ai = 0;// ai ÀÎÁö
 		build[num].symbol = 0;
 		sistem_letter(sistem, attack_buildings);
 	}
@@ -900,15 +900,15 @@ void enemy_bild(OBJECT_SAMPLE* name, BUILD_s build[]) {
 //				check_col = (*name).pos.column + j;
 //			}
 //
-//			// ë§µ ë²”ìœ„ ì²´í¬
+//			// ¸Ê ¹üÀ§ Ã¼Å©
 //			if (check_row < 1 || check_row >= MAP_HEIGHT - 1 ||
 //				check_col < 1 || check_col >= MAP_WIDTH - 1)
 //				continue;
 //
-//			// ì  ìœ ë‹› ë°œê²¬ ì‹œ
+//			// Àû À¯´Ö ¹ß°ß ½Ã
 //			if (map[1][check_row][check_col] == 'f' ||
 //				map[1][check_row][check_col] == 't') {
-//				// ì  ìœ„ì¹˜ë¡œ ëª©ì ì§€ ë³€ê²½
+//				// Àû À§Ä¡·Î ¸ñÀûÁö º¯°æ
 //				(*name).original_dest.row = (*name).dest.row;
 //				(*name).original_dest.column = (*name).dest.column;
 //				(*name).dest.row = check_row;
@@ -922,7 +922,7 @@ void enemy_bild(OBJECT_SAMPLE* name, BUILD_s build[]) {
 
 //============ai=======
 
-void initial_ai_H(void) { // ì´ˆê¸° H ìœ„ì¹˜ ì €ì¥
+void initial_ai_H(void) { // ÃÊ±â H À§Ä¡ ÀúÀå
 	POSITION pos = { 3 ,MAP_WIDTH - 2 };
 	push_units(H_ai_units, pos, 70, Harvest);
 }
