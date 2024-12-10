@@ -49,6 +49,7 @@
       움직임(engine.c)
         1. 플레이어의 하베스터를 움직이는 것과 동일한 함수 사용
         (POSITION H_obj_next_position(OBJECT_SAMPLE* name),void H_obj_move(OBJECT_SAMPLE* name))
+    
         2. 스파이스에 도착하면 스파이스를 2~4 랜덤하게 먹는다.
         3. void H_obj_move(OBJECT_SAMPLE* name) 이곳에서 스파이스 먹는 것을 조건해놨으며 스파이스를 먹으면 본진으로 목적지를 옮긴다.
         4. 다시 본진으로 돌아가면 가까운 스파이스를 찾는다. 스파이스를 찾는 것은 샌드윔이 하베스터를 찾는 것과 동일하다.
